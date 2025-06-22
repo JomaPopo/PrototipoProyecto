@@ -6,10 +6,13 @@ public class QuizManager : MonoBehaviour
 {
     [Tooltip("Paneles: 0=Presentación, 1-4=Preguntas A-D, 5=Resultados")]
     public GameObject[] panels;
-    
 
     [Header("Resultados")]
     public TMP_Text resultText;
+
+    [Header("Control de Movimiento")]
+    public MonoBehaviour playerMovementScript;
+    public MonoBehaviour cameraLookScript;
 
     private int currentIndex = 0;
     private int correctCount = 0;
@@ -17,25 +20,30 @@ public class QuizManager : MonoBehaviour
 
     void Start()
     {
-        // Desactivar todos los paneles y mostrar solo el de presentación
+        // Desactivar movimiento y cámara al inicio
+        if (playerMovementScript != null)
+            playerMovementScript.enabled = false;
+
+        if (cameraLookScript != null)
+            cameraLookScript.enabled = false;
+
+        // Mostrar solo el panel de presentación
         foreach (var panel in panels)
             panel.SetActive(false);
 
         if (panels.Length > 0)
             panels[0].SetActive(true);
+
+        // Asegurar que el cursor esté visible al inicio
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 
-    /// <summary>
-    /// Llamar desde el botón de "Continuar" del panel de presentación.
-    /// </summary>
     public void OnContinue()
     {
         ShowNextPanel();
     }
 
-    /// <summary>
-    /// Llamar en OnClick de cada botón de respuesta: true para correcta, false para incorrecta.
-    /// </summary>
     public void OnOptionSelected(bool isCorrect)
     {
         if (isCorrect)
@@ -48,11 +56,9 @@ public class QuizManager : MonoBehaviour
 
     private void ShowNextPanel()
     {
-        // Ocultar panel actual
         panels[currentIndex].SetActive(false);
         currentIndex++;
 
-        // Si no es el panel de resultados, mostrar siguiente pregunta
         if (currentIndex < panels.Length - 1)
         {
             panels[currentIndex].SetActive(true);
@@ -65,16 +71,26 @@ public class QuizManager : MonoBehaviour
 
     private void ShowResultsPanel()
     {
-        // Mostrar panel de resultados
         panels[panels.Length - 1].SetActive(true);
         resultText.text = $"Respuestas correctas: {correctCount}\n" +
                           $"Respuestas incorrectas: {wrongCount}";
+
+        // El jugador podrá moverse solo cuando cierre este panel usando un botón
     }
 
     public void HidePanel(GameObject panel)
     {
         panel.SetActive(false);
+
+        // ? Activar movimiento y cámara
+        if (playerMovementScript != null)
+            playerMovementScript.enabled = true;
+
+        if (cameraLookScript != null)
+            cameraLookScript.enabled = true;
+
+        // ? Bloquear y ocultar el cursor
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
-
-
 }
