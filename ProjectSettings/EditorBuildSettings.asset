@@ -17,6 +17,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Game_Calle.unity
     guid: a259769e5873893478f6bb70ed14c93c
+  - enabled: 1
+    path: Assets/Scenes/Simulador.unity
+    guid: d16cab40f26d0ff46abff182e83c21e4
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: e58f966e4f798204d84ef764a672a1ff, type: 2}

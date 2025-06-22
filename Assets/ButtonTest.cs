@@ -1,10 +1,10 @@
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.SceneManagement; 
 
 public class ButtonTest : MonoBehaviour
 {
-    public void SayHello()
+    public void CargaEscena()
     {
-        Debug.Log("Hola desde el boton en World Space");
+        SceneManager.LoadScene("Simulador");
     }
 }

@@ -8,23 +8,21 @@ public class MouseLook : MonoBehaviour
     public PlayerMovement playerMovement;
 
     private float xRotation = 0f;
-    private bool cursorLocked = true;
+    private bool cursorLocked = false; // Comienza desbloqueado
 
     void Start()
     {
-        LockCursor(); // Al iniciar, bloquear cursor (modo FPS)
+        UnlockCursor(); // Al iniciar, desbloquear el cursor
     }
 
     void Update()
     {
-        // Cambiar entre cursor visible/oculto con teclas
-        if (Keyboard.current.escapeKey.wasPressedThisFrame)
+        if (Keyboard.current.enterKey.wasPressedThisFrame)
         {
-            UnlockCursor();
-        }
-        else if (Keyboard.current.enterKey.wasPressedThisFrame)
-        {
-            LockCursor();
+            if (cursorLocked)
+                UnlockCursor();
+            else
+                LockCursor();
         }
 
         // Si el cursor está desbloqueado, no mover la cámara

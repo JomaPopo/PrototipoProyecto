@@ -2295,7 +2295,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 2133907175}
         m_TargetAssemblyTypeName: ButtonTest, Assembly-CSharp
-        m_MethodName: SayHello
+        m_MethodName: CargaEscena
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -5088,7 +5088,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: ed22de356bd672a4888c6450afedc923, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2.474
+      value: -2.43
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: ed22de356bd672a4888c6450afedc923, type: 3}
       propertyPath: m_LocalRotation.w
@@ -7810,7 +7810,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mouseSensitivity: 100
   playerBody: {fileID: 879171085}
-  playerMovement: {fileID: 0}
+  playerMovement: {fileID: 879171080}
 --- !u!114 &2042145367
 MonoBehaviour:
   m_ObjectHideFlags: 0
