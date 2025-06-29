@@ -9,6 +9,7 @@ public class PlayerMovement : MonoBehaviour
     void Start()
     {
         controller = GetComponent<CharacterController>();
+        this.enabled = false; // ? Desactivado al inicio
     }
 
     void Update()
@@ -22,5 +23,11 @@ public class PlayerMovement : MonoBehaviour
 
         Vector3 move = transform.right * input.x + transform.forward * input.y;
         controller.Move(move * moveSpeed * Time.deltaTime);
+    }
+
+    // ? Método público para activar desde GameEventListener
+    public void EnableMovement()
+    {
+        this.enabled = true;
     }
 }

@@ -8,11 +8,12 @@ public class MouseLook : MonoBehaviour
     public PlayerMovement playerMovement;
 
     private float xRotation = 0f;
-    private bool cursorLocked = false; // Comienza desbloqueado
+    private bool cursorLocked = false;
 
     void Start()
     {
-        UnlockCursor(); // Al iniciar, desbloquear el cursor
+        UnlockCursor();
+        this.enabled = false; // ? Desactivado al inicio
     }
 
     void Update()
@@ -25,7 +26,6 @@ public class MouseLook : MonoBehaviour
                 LockCursor();
         }
 
-        // Si el cursor está desbloqueado, no mover la cámara
         if (!cursorLocked || Mouse.current == null) return;
 
         Vector2 mouseDelta = Mouse.current.delta.ReadValue();
@@ -55,5 +55,12 @@ public class MouseLook : MonoBehaviour
         cursorLocked = false;
 
         if (playerMovement != null) playerMovement.enabled = false;
+    }
+
+    // ? Método público para usar desde GameEventListener
+    public void EnableMouseLook()
+    {
+        this.enabled = true;
+        LockCursor(); // Opcional: bloquear cursor de inmediato
     }
 }

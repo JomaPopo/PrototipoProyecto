@@ -1,18 +1,18 @@
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
+using Assets.Scripts.GameEvents;
 
 public class QuizManager : MonoBehaviour
 {
-    [Tooltip("Paneles: 0=Presentación, 1-4=Preguntas A-D, 5=Resultados")]
     public GameObject[] panels;
-
-    [Header("Resultados")]
     public TMP_Text resultText;
 
     [Header("Control de Movimiento")]
     public MonoBehaviour playerMovementScript;
     public MonoBehaviour cameraLookScript;
+
+    [Header("Evento al finalizar completamente el quiz")]
+    public GameEvent quizFinishedEvent;
 
     private int currentIndex = 0;
     private int correctCount = 0;
@@ -20,21 +20,18 @@ public class QuizManager : MonoBehaviour
 
     void Start()
     {
-        // Desactivar movimiento y cámara al inicio
         if (playerMovementScript != null)
             playerMovementScript.enabled = false;
 
         if (cameraLookScript != null)
             cameraLookScript.enabled = false;
 
-        // Mostrar solo el panel de presentación
-        foreach (var panel in panels)
-            panel.SetActive(false);
+        for (int i = 0; i < panels.Length; i++)
+            panels[i].SetActive(false);
 
         if (panels.Length > 0)
             panels[0].SetActive(true);
 
-        // Asegurar que el cursor esté visible al inicio
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
     }
@@ -56,9 +53,12 @@ public class QuizManager : MonoBehaviour
 
     private void ShowNextPanel()
     {
-        panels[currentIndex].SetActive(false);
+        if (currentIndex < panels.Length)
+            panels[currentIndex].SetActive(false);
+
         currentIndex++;
 
+        // Ahora: si quedan preguntas
         if (currentIndex < panels.Length - 1)
         {
             panels[currentIndex].SetActive(true);
@@ -71,26 +71,29 @@ public class QuizManager : MonoBehaviour
 
     private void ShowResultsPanel()
     {
-        panels[panels.Length - 1].SetActive(true);
-        resultText.text = $"Respuestas correctas: {correctCount}\n" +
-                          $"Respuestas incorrectas: {wrongCount}";
+        int lastPanel = panels.Length - 1;
 
-        // El jugador podrá moverse solo cuando cierre este panel usando un botón
+        // Aseguramos que no se pase el índice
+        if (lastPanel >= 0)
+            panels[lastPanel].SetActive(true);
+
+        resultText.text = $"Respuestas correctas: {correctCount}\nRespuestas incorrectas: {wrongCount}";
     }
 
     public void HidePanel(GameObject panel)
     {
         panel.SetActive(false);
 
-        // ? Activar movimiento y cámara
         if (playerMovementScript != null)
             playerMovementScript.enabled = true;
 
         if (cameraLookScript != null)
             cameraLookScript.enabled = true;
 
-        // ? Bloquear y ocultar el cursor
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        if (quizFinishedEvent != null)
+            quizFinishedEvent.Raise();
     }
 }
