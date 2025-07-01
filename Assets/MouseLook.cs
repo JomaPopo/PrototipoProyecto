@@ -3,9 +3,12 @@ using UnityEngine.InputSystem;
 
 public class MouseLook : MonoBehaviour
 {
+    [Header("Look Settings")]
     public float mouseSensitivity = 100f;
     public Transform playerBody;
-    public PlayerMovement playerMovement;
+
+    [Header("Cursor Settings")]
+    public bool lockCursorOnEnable = true;
 
     private float xRotation = 0f;
     private bool cursorLocked = false;
@@ -13,17 +16,14 @@ public class MouseLook : MonoBehaviour
     void Start()
     {
         UnlockCursor();
-        this.enabled = false; // ? Desactivado al inicio
+        this.enabled = false;
     }
 
     void Update()
     {
         if (Keyboard.current.enterKey.wasPressedThisFrame)
         {
-            if (cursorLocked)
-                UnlockCursor();
-            else
-                LockCursor();
+            ToggleCursor();
         }
 
         if (!cursorLocked || Mouse.current == null) return;
@@ -36,7 +36,16 @@ public class MouseLook : MonoBehaviour
         xRotation = Mathf.Clamp(xRotation, -90f, 90f);
 
         transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+
         playerBody.Rotate(Vector3.up * mouseX);
+    }
+
+    private void ToggleCursor()
+    {
+        if (cursorLocked)
+            UnlockCursor();
+        else
+            LockCursor();
     }
 
     private void LockCursor()
@@ -44,8 +53,6 @@ public class MouseLook : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
         cursorLocked = true;
-
-        if (playerMovement != null) playerMovement.enabled = true;
     }
 
     private void UnlockCursor()
@@ -53,14 +60,12 @@ public class MouseLook : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
         cursorLocked = false;
-
-        if (playerMovement != null) playerMovement.enabled = false;
     }
 
-    // ? Método público para usar desde GameEventListener
+    
     public void EnableMouseLook()
     {
         this.enabled = true;
-        LockCursor(); // Opcional: bloquear cursor de inmediato
+        if (lockCursorOnEnable) LockCursor();
     }
 }
