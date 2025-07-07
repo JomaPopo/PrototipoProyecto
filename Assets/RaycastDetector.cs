@@ -11,6 +11,9 @@ public class RaycastDetector : MonoBehaviour
     private float verticalRotation = 0f;
     private float horizontalRotation = 0f;
 
+    [Header("Control de rotación")]
+    public bool activarRotacion = true; // ? ¡Esta línea es clave!
+
     private StepTriggerReceiver currentReceiver = null;
 
     private void Start()
@@ -21,10 +24,13 @@ public class RaycastDetector : MonoBehaviour
 
     private void Update()
     {
-        RotarCamara();
+        if (activarRotacion)
+        {
+            RotarCamara();
+        }
+
         LanzarRaycast();
 
-        // Solo activamos el paso si el jugador hace clic y hay un receptor actual
         if (Input.GetMouseButtonDown(0) && currentReceiver != null)
         {
             currentReceiver.ActivarPaso();
