@@ -96,4 +96,17 @@ public class QuizManager : MonoBehaviour
         if (quizFinishedEvent != null)
             quizFinishedEvent.Raise();
     }
+    public int GetCorrectCountForTest()
+    {
+        return correctCount;
+    }
+
+    public int GetWrongCountForTest()
+    {
+        return wrongCount;
+    }
+    public int GetCurrentIndexForTest()
+    {
+        return currentIndex;
+    }
 }

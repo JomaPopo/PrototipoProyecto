@@ -28,7 +28,17 @@ public class MouseLook : MonoBehaviour
 
         if (!cursorLocked || Mouse.current == null) return;
 
+        // Leemos el input del mouse
         Vector2 mouseDelta = Mouse.current.delta.ReadValue();
+
+        // ¡NUEVO! Llamamos a la función pública con el input que leímos
+        ProcessLook(mouseDelta);
+    }
+
+    // ¡NUEVA FUNCIÓN PÚBLICA! Toda la lógica de rotación está aquí.
+    // Ahora nuestros tests pueden llamar a esta función directamente.
+    public void ProcessLook(Vector2 mouseDelta)
+    {
         float mouseX = mouseDelta.x * mouseSensitivity * Time.deltaTime;
         float mouseY = mouseDelta.y * mouseSensitivity * Time.deltaTime;
 
@@ -37,7 +47,8 @@ public class MouseLook : MonoBehaviour
 
         transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
 
-        playerBody.Rotate(Vector3.up * mouseX);
+        if (playerBody != null)
+            playerBody.Rotate(Vector3.up * mouseX);
     }
 
     private void ToggleCursor()
@@ -62,7 +73,7 @@ public class MouseLook : MonoBehaviour
         cursorLocked = false;
     }
 
-    
+
     public void EnableMouseLook()
     {
         this.enabled = true;
