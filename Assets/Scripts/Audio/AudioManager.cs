@@ -1,58 +1,71 @@
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.Audio;
 
-// 1. Cambiamos "MonoBehaviour" por nuestro molde "SingletonPersistent<AudioManager>"
 public class AudioManager : SingletonPersistent<AudioManager>
 {
-    // 2. Borramos todo el código del Singleton que tenías en Awake() y la variable "Instance".
-    //    ¡El molde ya se encarga de todo eso!
-
+    [Header("Audio Mixer y Settings")]
     [SerializeField] public AudioMixer myMixer;
-    [SerializeField] private Slider sliderMaster;
-    [SerializeField] private Slider sliderMusic;
-    [SerializeField] private Slider sliderSFX;
     [SerializeField] private AudioSettings audioSettings;
 
-    // Dejamos el resto de tu lógica intacta
+    [Header("Audio Sources")]
+    [SerializeField] private AudioSource musicSource;
+    [SerializeField] private AudioSource sfxSource;
+
+    [Header("Audio Clips (Librería)")]
+    public AudioClip backgroundMusic;
+    public AudioClip buttonClickSound;
+
+    // El Start ahora es perfecto para cargar y aplicar los volúmenes guardados.
     private void Start()
     {
-        // Es buena práctica comprobar si los sliders están asignados
-        // para evitar errores si se usa en una escena sin el menú de opciones.
-        if (sliderMaster != null && sliderMusic != null && sliderSFX != null)
+        // Cargamos los valores guardados en el ScriptableObject y los aplicamos al Mixer.
+        SetVolumeMaster(audioSettings.masterVolume);
+        SetVolumeMusic(audioSettings.musicVolume);
+        SetVolumeSFX(audioSettings.sfxVolume);
+
+        PlayBackgroundMusic();
+    }
+
+    // --- Métodos de Reproducción (sin cambios) ---
+    public void PlayBackgroundMusic()
+    {
+        if (backgroundMusic != null)
         {
-            LoadVolumeSettings();
+            musicSource.clip = backgroundMusic;
+            musicSource.loop = true;
+            musicSource.Play();
         }
     }
 
-    private void LoadVolumeSettings()
+    public void PlayButtonClickSound()
     {
-        sliderMaster.value = audioSettings.masterVolume;
-        sliderMusic.value = audioSettings.musicVolume;
-        sliderSFX.value = audioSettings.sfxVolume;
-        SetVolumeMaster();
-        SetVolumeMusic();
-        SetVolumeSFX();
+        if (buttonClickSound != null)
+        {
+            sfxSource.PlayOneShot(buttonClickSound);
+        }
     }
 
-    public void SetVolumeMaster()
+    // --- Métodos de Volumen (¡MEJORADOS!) ---
+    // Ahora aceptan un valor 'volume' como parámetro.
+    public void SetVolumeMaster(float volume)
     {
-        float volume = sliderMaster.value;
-        audioSettings.masterVolume = volume;
+        // Aseguramos que el volumen esté en un rango seguro para el Log10
+        volume = Mathf.Clamp(volume, 0.0001f, 1f);
         myMixer.SetFloat("Master", Mathf.Log10(volume) * 20);
+        audioSettings.masterVolume = volume; // Guardamos el valor
     }
 
-    public void SetVolumeMusic()
+    public void SetVolumeMusic(float volume)
     {
-        float volume = sliderMusic.value;
-        audioSettings.musicVolume = volume;
+        volume = Mathf.Clamp(volume, 0.0001f, 1f);
         myMixer.SetFloat("Music", Mathf.Log10(volume) * 20);
+        audioSettings.musicVolume = volume;
     }
 
-    public void SetVolumeSFX()
+    public void SetVolumeSFX(float volume)
     {
-        float volume = sliderSFX.value;
+        volume = Mathf.Clamp(volume, 0.0001f, 1f);
+        myMixer.SetFloat("Sfx", Mathf.Log10(volume) * 20);
         audioSettings.sfxVolume = volume;
-        myMixer.SetFloat("SFX", Mathf.Log10(volume) * 20);
     }
 }
