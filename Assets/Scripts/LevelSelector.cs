@@ -31,4 +31,12 @@ public class LevelSelector : MonoBehaviour
             niveles[i].SetActive(i == indice);
         }
     }
+    public void scenaPlaya()
+    {
+        SceneChanger.Instance.CambiarEscena("Game_Playa");
+    }
+
+
+
+
 }

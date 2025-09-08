@@ -2,31 +2,27 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Audio;
 
-public class AudioManager : MonoBehaviour
+// 1. Cambiamos "MonoBehaviour" por nuestro molde "SingletonPersistent<AudioManager>"
+public class AudioManager : SingletonPersistent<AudioManager>
 {
-    public static AudioManager Instance { get; set; }
+    // 2. Borramos todo el código del Singleton que tenías en Awake() y la variable "Instance".
+    //    ¡El molde ya se encarga de todo eso!
+
     [SerializeField] public AudioMixer myMixer;
     [SerializeField] private Slider sliderMaster;
     [SerializeField] private Slider sliderMusic;
     [SerializeField] private Slider sliderSFX;
     [SerializeField] private AudioSettings audioSettings;
-    
 
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(this);
-        }
-        else
-        {
-            Instance = this;
-        }
-    }
-
+    // Dejamos el resto de tu lógica intacta
     private void Start()
     {
-        LoadVolumeSettings();
+        // Es buena práctica comprobar si los sliders están asignados
+        // para evitar errores si se usa en una escena sin el menú de opciones.
+        if (sliderMaster != null && sliderMusic != null && sliderSFX != null)
+        {
+            LoadVolumeSettings();
+        }
     }
 
     private void LoadVolumeSettings()

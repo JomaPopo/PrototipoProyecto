@@ -6,7 +6,8 @@
         "UnityEditor.TestRunner",
         "Unity.InputSystem",
         "Juego.Runtime",
-        "Quisi"
+        "Quisi",
+        "Utils"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
