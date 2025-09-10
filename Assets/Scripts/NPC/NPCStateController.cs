@@ -4,7 +4,12 @@ using UnityEngine.AI;
 [RequireComponent(typeof(NavMeshAgent))]
 public class NPCStateController : MonoBehaviour
 {
-    // --- Variables Públicas (igual que antes) ---
+    // ¡NUEVO! Un enum para seleccionar el estado inicial desde el Inspector.
+    public enum StartingState { WalkingOnBeach, SwimmingInSea, Drowning }
+
+    [Header("Control de Estado para Pruebas")]
+    public StartingState startInState = StartingState.WalkingOnBeach;
+
     [Header("Parámetros de Comportamiento")]
     public float minWalkTime = 10f;
     public float maxWalkTime = 30f;
@@ -15,12 +20,12 @@ public class NPCStateController : MonoBehaviour
 
     [Header("Referencias")]
     public GameObject drowningIndicator;
-    [HideInInspector] public NavMeshAgent agent; // Lo hacemos público pero oculto en inspector
+    [HideInInspector] public NavMeshAgent agent;
 
     // --- Sistema de Estados ---
-    [SerializeField]private NPCBaseState currentState;
+    private NPCBaseState currentState;
+    public NPCBaseState CurrentState => currentState;
 
-    // Creamos una instancia de cada estado que el NPC puede tener
     public readonly NPCWalkState WalkState = new NPCWalkState();
     public readonly NPCSwimState SwimState = new NPCSwimState();
     public readonly NPCDrownState DrownState = new NPCDrownState();
@@ -35,20 +40,29 @@ public class NPCStateController : MonoBehaviour
         if (drowningIndicator != null)
             drowningIndicator.SetActive(false);
 
-        // El estado inicial es caminar
-        TransitionToState(WalkState);
+        // ¡NUEVA LÓGICA! Leemos la selección del Inspector para decidir el estado inicial.
+        switch (startInState)
+        {
+            case StartingState.WalkingOnBeach:
+                TransitionToState(WalkState);
+                break;
+            case StartingState.SwimmingInSea:
+                TransitionToState(SwimState);
+                break;
+            case StartingState.Drowning:
+                TransitionToState(DrownState);
+                break;
+        }
     }
 
     void Update()
     {
-        // El controlador ya no piensa, solo le dice al estado actual que trabaje.
         if (currentState != null)
         {
             currentState.UpdateState(this);
         }
     }
 
-    // La función que usan los estados para cambiar al siguiente
     public void TransitionToState(NPCBaseState nextState)
     {
         if (currentState != null)
@@ -59,20 +73,20 @@ public class NPCStateController : MonoBehaviour
         currentState.EnterState(this);
     }
 
-    // --- Funciones para encontrar puntos (igual que antes) ---
+    // --- Funciones de Navegación (sin cambios) ---
     public Vector3 GetRandomPointOnBeach()
     {
-        return GetRandomPointOnNavMesh(0); // Arena
+        return GetRandomPointOnNavMesh(0);
     }
 
     public Vector3 GetRandomPointInSea()
     {
-        return GetRandomPointOnNavMesh(3); // Agua (¡Asegúrate de que este número coincida con tu NavMesh Area!)
+        return GetRandomPointOnNavMesh(3);
     }
 
     private Vector3 GetRandomPointOnNavMesh(int areaIndex)
     {
-        Vector3 randomDirection = Random.insideUnitSphere * 100f; // Aumentamos el radio de búsqueda
+        Vector3 randomDirection = Random.insideUnitSphere * 100f;
         randomDirection += transform.position;
         NavMeshHit hit;
         NavMesh.SamplePosition(randomDirection, out hit, 100f, 1 << areaIndex);

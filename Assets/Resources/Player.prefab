@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1448963536355808930
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6763781672181583625}
+  m_Layer: 0
+  m_Name: punto de carag
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6763781672181583625
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1448963536355808930}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.34, z: 1.375}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3581237914034900830}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3206709810933843637
 GameObject:
   m_ObjectHideFlags: 0
@@ -157,7 +188,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mouseSensitivity: 100
   playerBody: {fileID: 3581237914034900830}
-  lockCursorOnEnable: 1
 --- !u!114 &6247241986445598253
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -173,7 +203,7 @@ MonoBehaviour:
   m_EventMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_MaxRayIntersections: 0
+  m_MaxRayIntersections: 32
 --- !u!1 &5371626580438500890
 GameObject:
   m_ObjectHideFlags: 0
@@ -186,9 +216,10 @@ GameObject:
   - component: {fileID: 1073775889891222315}
   - component: {fileID: 4370032278060125441}
   - component: {fileID: 3357059325200815209}
-  - component: {fileID: 8068883266055769519}
   - component: {fileID: 8937737730236717160}
   - component: {fileID: 3922575324574158446}
+  - component: {fileID: 8068883266055769519}
+  - component: {fileID: 8571239767521129042}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -210,6 +241,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 150002532745122640}
+  - {fileID: 6763781672181583625}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &1073775889891222315
@@ -288,25 +320,6 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &8068883266055769519
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5371626580438500890}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 134580e4a63aa2b45b0f3c58b7cdffe7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speed: 5
-  jumpForce: 2
-  groundCheck: {fileID: 3581237914034900830}
-  groundDistance: 0.5
-  groundMask:
-    serializedVersion: 2
-    m_Bits: 128
 --- !u!54 &8937737730236717160
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -332,7 +345,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 112
+  m_Constraints: 64
   m_CollisionDetection: 0
 --- !u!114 &3922575324574158446
 MonoBehaviour:
@@ -378,7 +391,7 @@ MonoBehaviour:
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 8068883266055769519}
-        m_TargetAssemblyTypeName: PlayerMovement, Assembly-CSharp
+        m_TargetAssemblyTypeName: PlayerMovement, Juego.Runtime
         m_MethodName: OnJump
         m_Mode: 0
         m_Arguments:
@@ -391,8 +404,74 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 9148067c-1c30-4b79-84bd-37ab88793fc9
     m_ActionName: Player/New action
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 4220427276412907092}
+        m_TargetAssemblyTypeName: MouseLook, Juego.Runtime
+        m_MethodName: OnLook
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: f3703843-e8c0-49ba-a3db-11c178928ed0
+    m_ActionName: 'Player/look[/Mouse/delta]'
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 8571239767521129042}
+        m_TargetAssemblyTypeName: PlayerInteraction, Juego.Runtime
+        m_MethodName: OnDrop
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: dfcddd5d-b99e-41c0-b9f6-2b15d05b71dc
+    m_ActionName: 'Player/Interactuar[/Keyboard/e]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
+--- !u!114 &8068883266055769519
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5371626580438500890}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 134580e4a63aa2b45b0f3c58b7cdffe7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speed: 5
+  jumpForce: 2
+  groundCheck: {fileID: 3581237914034900830}
+  groundDistance: 1.55
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 128
+--- !u!114 &8571239767521129042
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5371626580438500890}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9204dbdbfde1e8248914cbd7cee9f85a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  interactionDistance: 3
+  carryPosition: {fileID: 6763781672181583625}
+  interactionText: {fileID: 0}

@@ -7,76 +7,44 @@ public class MouseLook : MonoBehaviour
     public float mouseSensitivity = 100f;
     public Transform playerBody;
 
-    [Header("Cursor Settings")]
-    public bool lockCursorOnEnable = true;
-
     private float xRotation = 0f;
-    private bool cursorLocked = false;
 
+    // Ya no necesitamos la lógica de Start() que lo desactivaba.
+    // Ahora, el script estará siempre activo cuando el juego comience.
     void Start()
     {
-        UnlockCursor();
-        this.enabled = false;
+        // Bloqueamos el cursor en el centro de la pantalla al empezar el juego.
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
-    void Update()
+    // Esta es la nueva función pública que será llamada por el PlayerInput.
+    public void OnLook(InputAction.CallbackContext context)
     {
-        if (Keyboard.current.enterKey.wasPressedThisFrame)
-        {
-            ToggleCursor();
-        }
+        // Leemos el valor Vector2 del movimiento del mouse desde el contexto del input.
+        Vector2 mouseDelta = context.ReadValue<Vector2>();
 
-        if (!cursorLocked || Mouse.current == null) return;
-
-        // Leemos el input del mouse
-        Vector2 mouseDelta = Mouse.current.delta.ReadValue();
-
-        // ¡NUEVO! Llamamos a la función pública con el input que leímos
+        // Llamamos a nuestra función de lógica con ese valor.
         ProcessLook(mouseDelta);
     }
 
-    // ¡NUEVA FUNCIÓN PÚBLICA! Toda la lógica de rotación está aquí.
-    // Ahora nuestros tests pueden llamar a esta función directamente.
+    // Esta función contiene la lógica de rotación que ya tenías.
+    // La mantenemos separada por si la necesitamos para los tests.
     public void ProcessLook(Vector2 mouseDelta)
     {
-        float mouseX = mouseDelta.x * mouseSensitivity * Time.deltaTime;
-        float mouseY = mouseDelta.y * mouseSensitivity * Time.deltaTime;
+        // Usamos Time.fixedDeltaTime para que la sensibilidad sea consistente
+        // independientemente de los frames por segundo.
+        float mouseX = mouseDelta.x * mouseSensitivity * Time.fixedDeltaTime;
+        float mouseY = mouseDelta.y * mouseSensitivity * Time.fixedDeltaTime;
 
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, -90f, 90f);
 
+        // Rotamos la cámara arriba y abajo (eje X)
         transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
 
+        // Rotamos el cuerpo del jugador a los lados (eje Y)
         if (playerBody != null)
             playerBody.Rotate(Vector3.up * mouseX);
-    }
-
-    private void ToggleCursor()
-    {
-        if (cursorLocked)
-            UnlockCursor();
-        else
-            LockCursor();
-    }
-
-    private void LockCursor()
-    {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-        cursorLocked = true;
-    }
-
-    private void UnlockCursor()
-    {
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-        cursorLocked = false;
-    }
-
-
-    public void EnableMouseLook()
-    {
-        this.enabled = true;
-        if (lockCursorOnEnable) LockCursor();
     }
 }
