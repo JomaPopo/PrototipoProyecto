@@ -1,4 +1,7 @@
+using System.Collections.Generic; 
 using UnityEngine;
+using UnityEngine.EventSystems; 
+using UnityEngine.UI; 
 using TMPro;
 
 public class PlayerInteraction : MonoBehaviour
@@ -12,7 +15,9 @@ public class PlayerInteraction : MonoBehaviour
 
     private Camera playerCamera;
     private NPCStateController currentlyCarriedNPC = null;
-    private Rigidbody carriedNpcRigidbody = null; // Guardamos una referencia a su Rigidbody
+    private Rigidbody carriedNpcRigidbody = null;
+
+    private GraphicRaycaster currentGraphicRaycaster;
 
     void Start()
     {
@@ -27,11 +32,10 @@ public class PlayerInteraction : MonoBehaviour
     {
         if (currentlyCarriedNPC == null)
         {
-            CheckForInteractable();
+            CheckForPhysicalInteractable();
         }
         else
         {
-            // Si estamos cargando a alguien, el texto no debe aparecer
             if (interactionText != null && interactionText.gameObject.activeSelf)
             {
                 interactionText.gameObject.SetActive(false);
@@ -39,9 +43,42 @@ public class PlayerInteraction : MonoBehaviour
         }
 
         HandleInteractionInput();
+
+        if (Input.GetMouseButtonDown(0)) 
+        {
+            TryInteractWithWorldUI();
+        }
     }
 
-    private void CheckForInteractable()
+    private void TryInteractWithWorldUI()
+    {
+        PointerEventData pointerData = new PointerEventData(EventSystem.current);
+        pointerData.position = new Vector2(Screen.width / 2f, Screen.height / 2f);
+
+        List<RaycastResult> results = new List<RaycastResult>();
+
+        GraphicRaycaster[] raycasters = FindObjectsOfType<GraphicRaycaster>();
+        foreach (var raycaster in raycasters)
+        {
+            raycaster.Raycast(pointerData, results);
+        }
+
+        if (results.Count > 0)
+        {
+            foreach (var result in results)
+            {
+                Button button = result.gameObject.GetComponent<Button>();
+                if (button != null)
+                {
+                    Debug.Log("¡Clic en el botón del mundo: " + button.name);
+                    button.onClick.Invoke();
+                    break; 
+                }
+            }
+        }
+    }
+
+    private void CheckForPhysicalInteractable()
     {
         RaycastHit hit;
         if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit, interactionDistance))
@@ -97,12 +134,10 @@ public class PlayerInteraction : MonoBehaviour
     private void PickUpNPC(NPCStateController npcToCarry)
     {
         currentlyCarriedNPC = npcToCarry;
-        carriedNpcRigidbody = npcToCarry.GetComponent<Rigidbody>(); // Obtenemos su Rigidbody
+        carriedNpcRigidbody = npcToCarry.GetComponent<Rigidbody>();
 
-        // --- ¡LA MAGIA ESTÁ AQUÍ! ---
         if (carriedNpcRigidbody != null)
         {
-            // Lo hacemos Kinematic para que no reaccione a la física
             carriedNpcRigidbody.isKinematic = true;
         }
 
@@ -117,10 +152,8 @@ public class PlayerInteraction : MonoBehaviour
     {
         currentlyCarriedNPC.transform.SetParent(null);
 
-        // --- Y AQUÍ LO DEVOLVEMOS A LA NORMALIDAD ---
         if (carriedNpcRigidbody != null)
         {
-            // Le devolvemos la física para que caiga al suelo de forma realista
             carriedNpcRigidbody.isKinematic = false;
         }
 

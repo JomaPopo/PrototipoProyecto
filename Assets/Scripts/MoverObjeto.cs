@@ -32,16 +32,23 @@ public class MoverUIConBoton : MonoBehaviour
                 enMovimiento = false;
             }
         }
+        HandleInteractionInput();
     }
 
-    // Llamado desde otro script, se pasa el destino Y directamente
     public void ActivarMovimiento(float nuevoDestinoY)
     {
-        rectTransform = GetComponent<RectTransform>(); // Por si aún no está asignado
+        rectTransform = GetComponent<RectTransform>();
         posicionInicial = rectTransform.anchoredPosition;
         destinoY = nuevoDestinoY;
         posicionDestino = new Vector2(posicionInicial.x, destinoY);
         tiempoTranscurrido = 0f;
         enMovimiento = true;
+    }
+    private void HandleInteractionInput()
+    {
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            ActivarMovimiento(2);
+        }
     }
 }
