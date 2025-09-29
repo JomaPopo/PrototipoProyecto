@@ -4,7 +4,7 @@ public enum BodyPart
     Hombros,
     Cabeza,
     Pecho,
-    Barriga,
+    Manos,
     Pies,
     Rodilla
 }
@@ -28,6 +28,10 @@ public class RescueManager : Singleton<RescueManager>
     {
         Debug.Log("¡Secuencia de rescate iniciada!");
         currentVictim = victim;
+        if (currentVictim.interactionCanvas != null)
+        {
+            currentVictim.interactionCanvas.SetActive(true);
+        }
         TransitionToState(RescueState.VictimRescued);
     }
 
@@ -44,29 +48,28 @@ public class RescueManager : Singleton<RescueManager>
 
             case RescueState.ConsciousnessCheck:
                 Debug.Log("Instructor: Sigue inconsciente. ¡Usa tu radio y pide ayuda!");
+                if (currentVictim.interactionCanvas != null)
+                {
+                    currentVictim.interactionCanvas.SetActive(false);
+                }
                 break;
 
         }
     }
     public void BodyPartInteracted(BodyPart part)
     {
-        // Solo reaccionamos si estamos en el paso de "comprobar si responde".
         if (currentState != RescueState.VictimRescued) return;
 
-        // Si el jugador tocó la parte correcta...
         if (part == BodyPart.Hombros)
         {
             Debug.Log("¡ACCIÓN CORRECTA! El jugador tocó los hombros.");
-            // Aquí podrías activar una animación y reproducir el sonido "Hey_RCP"
-           // AudioManager.Instance.PlaySound(AudioManager.Instance.heyRcpSound); // Necesitarás añadir esta referencia en AudioManager
+           // AudioManager.Instance.PlaySound(AudioManager.Instance.heyRcpSound);
 
-            // Avanzamos al siguiente estado del rescate.
             TransitionToState(RescueState.ConsciousnessCheck);
         }
         else // Si el jugador tocó cualquier otra parte...
         {
             Debug.Log($"ACCIÓN INCORRECTA: El jugador tocó {part}.");
-            // Damos feedback negativo.
             // AudioManager.Instance.PlayInstructorVoice("No, debes tocar los hombros.");
             Debug.Log("Instructor (Feedback): ¡No! Toca sus hombros para ver si responde.");
         }
@@ -76,7 +79,6 @@ public class RescueManager : Singleton<RescueManager>
         if (currentState == RescueState.VictimRescued)
         {
             Debug.Log("Jugador realiza la comprobación de conciencia.");
-            // Aquí podrías activar una animación y reproducir un sonido
             // AudioManager.Instance.PlaySound("Hey_RCP");
 
             TransitionToState(RescueState.ConsciousnessCheck);

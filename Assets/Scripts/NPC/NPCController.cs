@@ -2,17 +2,13 @@ using UnityEngine;
 
 public class NPCController : MonoBehaviour
 {
-    public enum State { Swimming, Drowning }
+    public enum State { Swimming, Drowning , Rescued }
 
     [Header("Estado Actual")]
-    // Hacemos la variable privada para que nadie la cambie desde fuera
     private State currentState;
-    // ¡NUEVO! Creamos una propiedad pública para que otros scripts puedan LEER el estado
     public State CurrentState => currentState;
 
-    // ... el resto de tu script no necesita cambios ...
 
-    //--- (Solo pego el resto del código para que tengas el contexto completo) ---
     [Header("Parámetros de Movimiento")]
     public float swimmingSpeed = 3.5f;
     public float rotationSpeed = 5f;
@@ -25,12 +21,17 @@ public class NPCController : MonoBehaviour
     [Header("Referencias")]
     public GameObject drowningIndicator;
     public Transform[] swimWaypoints;
+    public GameObject interactionCanvas;
     private Transform currentWaypoint;
 
     private Rigidbody rb;
 
     void Awake()
     {
+        if (drowningIndicator != null)
+            drowningIndicator.SetActive(false);
+        if (interactionCanvas != null)
+            interactionCanvas.SetActive(false);
         rb = GetComponent<Rigidbody>();
     }
 
@@ -63,14 +64,15 @@ public class NPCController : MonoBehaviour
             MoveAndRotateTowardsWaypoint();
         }
     }
+    public void OnRescued()
+    {
+        EnterRescuedState();
+    }
 
     void EnterSwimmingState()
     {
         Debug.Log("Entrando al estado: Nadando");
         currentState = State.Swimming;
-
-        if (drowningIndicator != null)
-            drowningIndicator.SetActive(false);
 
         swimTimer = Random.Range(minSwimTime, maxSwimTime);
         SetNewRandomWaypoint();
@@ -87,7 +89,12 @@ public class NPCController : MonoBehaviour
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
     }
-
+    private void EnterRescuedState()
+    {
+        currentState = State.Rescued;
+        if (drowningIndicator != null)
+            drowningIndicator.SetActive(false);
+    }
     void SetNewRandomWaypoint()
     {
         if (swimWaypoints.Length > 0)

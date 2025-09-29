@@ -106,16 +106,15 @@ public class PlayerInteraction : MonoBehaviour
             carriedNpcRigidbody.isKinematic = false;
         }
 
-        // Aquí es donde en el futuro le diremos que entre en el estado "Listo para RCP"
         Debug.Log($"NPC {currentlyCarriedNPC.name} dejado en la zona de rescate {zone.name}. Listo para RCP.");
 
         RescueManager.Instance.StartRescueSequence(currentlyCarriedNPC);
+        currentlyCarriedNPC.OnRescued();
 
         currentlyCarriedNPC = null;
         carriedNpcRigidbody = null;
     }
 
-    // --- El resto de funciones no necesitan cambios ---
     private void PickUpNPC(NPCController npcToCarry)
     {
         currentlyCarriedNPC = npcToCarry;
@@ -170,7 +169,6 @@ public class PlayerInteraction : MonoBehaviour
                 }
                 else if (RescueManager.Instance.currentState == RescueManager.RescueState.VictimRescued)
                 {
-                    // ¡NUEVO! Le decimos al manager que realice la acción
                     RescueManager.Instance.PerformConsciousnessCheck();
                 }
             }
