@@ -1137,7 +1137,7 @@ GameObject:
   - component: {fileID: 205737187}
   - component: {fileID: 205737189}
   - component: {fileID: 205737188}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3606,7 +3606,7 @@ GameObject:
   - component: {fileID: 703700669}
   - component: {fileID: 703700668}
   - component: {fileID: 703700671}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Manos
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3740,6 +3740,37 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   partType: 3
+--- !u!1 &718748091
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 718748092}
+  m_Layer: 0
+  m_Name: point
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &718748092
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 718748091}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0.491}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1379056392}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &733114231
 GameObject:
   m_ObjectHideFlags: 0
@@ -4761,7 +4792,7 @@ GameObject:
   - component: {fileID: 926874694}
   - component: {fileID: 926874693}
   - component: {fileID: 926874692}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: InteractionCanvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4776,7 +4807,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 926874690}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0.48}
+  m_LocalPosition: {x: 0, y: 0, z: 1.41}
   m_LocalScale: {x: -0.02, y: 0.04, z: 0.1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -5444,7 +5475,7 @@ GameObject:
   - component: {fileID: 1069806395}
   - component: {fileID: 1069806397}
   - component: {fileID: 1069806396}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6155,7 +6186,7 @@ GameObject:
   - component: {fileID: 1332112912}
   - component: {fileID: 1332112911}
   - component: {fileID: 1332112914}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Hombro
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7610,7 +7641,7 @@ GameObject:
   - component: {fileID: 1427547533}
   - component: {fileID: 1427547532}
   - component: {fileID: 1427547535}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Manos (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7755,7 +7786,7 @@ GameObject:
   - component: {fileID: 1427866643}
   - component: {fileID: 1427866645}
   - component: {fileID: 1427866644}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7967,6 +7998,10 @@ PrefabInstance:
       value: 1.65
       objectReference: {fileID: 0}
     - target: {fileID: 8571239767521129042, guid: edd21bfb90e8c1b4b9c0f39451e53da6, type: 3}
+      propertyPath: crosshair
+      value: 
+      objectReference: {fileID: 718748091}
+    - target: {fileID: 8571239767521129042, guid: edd21bfb90e8c1b4b9c0f39451e53da6, type: 3}
       propertyPath: carryPosition
       value: 
       objectReference: {fileID: 242463890}
@@ -7988,7 +8023,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 3581237914034900830, guid: edd21bfb90e8c1b4b9c0f39451e53da6, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 718748092}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: edd21bfb90e8c1b4b9c0f39451e53da6, type: 3}
 --- !u!1 &1450353833
@@ -8771,7 +8809,7 @@ GameObject:
   - component: {fileID: 1595485120}
   - component: {fileID: 1595485119}
   - component: {fileID: 1595485122}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: PiesBoton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -9959,7 +9997,7 @@ GameObject:
   - component: {fileID: 1849542173}
   - component: {fileID: 1849542175}
   - component: {fileID: 1849542174}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -11481,7 +11519,7 @@ Transform:
   m_GameObject: {fileID: 6093646520640009482}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -106.95, y: -3.057, z: -43.43}
+  m_LocalPosition: {x: -106.95, y: -3.057, z: -43.775}
   m_LocalScale: {x: 0.36200804, y: 0.36200804, z: 0.36200804}
   m_ConstrainProportionsScale: 0
   m_Children:

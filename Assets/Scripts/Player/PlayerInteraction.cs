@@ -12,7 +12,8 @@ public class PlayerInteraction : MonoBehaviour
     [SerializeField] private float dropCheckDistance = 2f;
 
     [Header("UI")]
-    [SerializeField] private TextMeshProUGUI interactionText;
+    [SerializeField] private TextMeshProUGUI interactionText; 
+    [SerializeField] private GameObject crosshair;
 
     private Camera playerCamera;
     private NPCController currentlyCarriedNPC = null;
@@ -21,28 +22,47 @@ public class PlayerInteraction : MonoBehaviour
     void Start()
     {
         playerCamera = GetComponentInChildren<Camera>();
-        if (interactionText != null)
-        {
-            interactionText.gameObject.SetActive(false);
-        }
+        HideInteractionText();
     }
 
     void Update()
     {
+
+        Debug.DrawRay(playerCamera.transform.position, playerCamera.transform.forward * interactionDistance, Color.cyan);
+
         if (currentlyCarriedNPC == null)
         {
             CheckForInteractables();
         }
-        else
+        else 
         {
             CheckForRescueZone();
         }
 
-        HandleInteractionInput();
+        HandleCarryInput();
 
-        if (Input.GetMouseButtonDown(0))
+        HandleUIClickInput();
+    }
+
+    private void CheckForInteractables()
+    {
+        RaycastHit hit;
+        bool hitSomethingInteractable = false;
+
+        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit, interactionDistance))
         {
-            TryInteractWithWorldUI();
+            NPCController npc = hit.collider.GetComponent<NPCController>();
+
+            if (npc != null && npc.CurrentState == NPCController.State.Drowning)
+            {
+                ShowInteractionText("Presiona [E] para Rescatar");
+                hitSomethingInteractable = true;
+            }
+        }
+
+        if (!hitSomethingInteractable)
+        {
+            HideInteractionText();
         }
     }
 
@@ -66,7 +86,7 @@ public class PlayerInteraction : MonoBehaviour
         }
     }
 
-    private void HandleInteractionInput()
+    private void HandleCarryInput()
     {
         if (Input.GetKeyDown(KeyCode.E))
         {
@@ -76,9 +96,49 @@ public class PlayerInteraction : MonoBehaviour
             }
             else
             {
-                TryToInteract();
+                TryToPickUpNPC();
             }
         }
+    }
+
+    private void HandleUIClickInput()
+    {
+        if (currentlyCarriedNPC == null && RescueManager.Instance.currentState == RescueManager.RescueState.VictimRescued)
+        {
+            if (crosshair != null && !crosshair.activeSelf) crosshair.SetActive(true);
+
+            if (Input.GetMouseButtonDown(0)) 
+            {
+                TryInteractWithWorldUI();
+            }
+        }
+        else
+        {
+            if (crosshair != null && crosshair.activeSelf) crosshair.SetActive(false);
+        }
+    }
+
+    private void TryToPickUpNPC()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit, interactionDistance))
+        {
+            NPCController npc = hit.collider.GetComponent<NPCController>();
+            if (npc != null && npc.CurrentState == NPCController.State.Drowning)
+            {
+                PickUpNPC(npc);
+            }
+        }
+    }
+    private void PickUpNPC(NPCController npcToCarry)
+    {
+        currentlyCarriedNPC = npcToCarry;
+        carriedNpcRigidbody = npcToCarry.GetComponent<Rigidbody>();
+        HideInteractionText();
+        if (carriedNpcRigidbody != null) carriedNpcRigidbody.isKinematic = true;
+        npcToCarry.transform.SetParent(carryPosition);
+        npcToCarry.transform.localPosition = Vector3.zero;
+        npcToCarry.transform.localRotation = Quaternion.identity;
     }
 
     private void TryToDropNPC()
@@ -97,79 +157,34 @@ public class PlayerInteraction : MonoBehaviour
     private void DropNPC(RescueZone zone)
     {
         currentlyCarriedNPC.transform.SetParent(null);
-
         currentlyCarriedNPC.transform.position = zone.dropPoint.position;
         currentlyCarriedNPC.transform.rotation = zone.dropPoint.rotation;
-
-        if (carriedNpcRigidbody != null)
-        {
-            carriedNpcRigidbody.isKinematic = false;
-        }
-
-        Debug.Log($"NPC {currentlyCarriedNPC.name} dejado en la zona de rescate {zone.name}. Listo para RCP.");
-
+        if (carriedNpcRigidbody != null) carriedNpcRigidbody.isKinematic = false;
         RescueManager.Instance.StartRescueSequence(currentlyCarriedNPC);
         currentlyCarriedNPC.OnRescued();
-
         currentlyCarriedNPC = null;
         carriedNpcRigidbody = null;
     }
 
-    private void PickUpNPC(NPCController npcToCarry)
+    private void TryInteractWithWorldUI()
     {
-        currentlyCarriedNPC = npcToCarry;
-        carriedNpcRigidbody = npcToCarry.GetComponent<Rigidbody>();
-
-        HideInteractionText();
-
-        if (carriedNpcRigidbody != null)
-            carriedNpcRigidbody.isKinematic = true;
-
-        npcToCarry.transform.SetParent(carryPosition);
-        npcToCarry.transform.localPosition = Vector3.zero;
-        npcToCarry.transform.localRotation = Quaternion.identity;
-    }
-
-    private void CheckForInteractables()
-    {
-        RaycastHit hit;
-        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit, interactionDistance))
+        PointerEventData pointerData = new PointerEventData(EventSystem.current);
+        pointerData.position = new Vector2(Screen.width / 2f, Screen.height / 2f);
+        List<RaycastResult> results = new List<RaycastResult>();
+        GraphicRaycaster[] raycasters = FindObjectsOfType<GraphicRaycaster>();
+        foreach (var raycaster in raycasters)
         {
-            NPCController npc = hit.collider.GetComponent<NPCController>();
-            if (npc != null)
-            {
-                // Si el NPC se está ahogando
-                if (npc.CurrentState == NPCController.State.Drowning)
-                {
-                    ShowInteractionText("Presiona [E] para Rescatar");
-                    return;
-                }
-                // Si el NPC está en la toalla y estamos en el paso correcto
-                if (RescueManager.Instance.currentState == RescueManager.RescueState.VictimRescued)
-                {
-                    ShowInteractionText("Presiona [E] para comprobar si responde");
-                    return;
-                }
-            }
+            raycaster.Raycast(pointerData, results);
         }
-        HideInteractionText();
-    }
-
-    private void TryToInteract()
-    {
-        RaycastHit hit;
-        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit, interactionDistance))
+        if (results.Count > 0)
         {
-            NPCController npc = hit.collider.GetComponent<NPCController>();
-            if (npc != null)
+            foreach (var result in results)
             {
-                if (npc.CurrentState == NPCController.State.Drowning)
+                Button button = result.gameObject.GetComponent<Button>();
+                if (button != null)
                 {
-                    PickUpNPC(npc);
-                }
-                else if (RescueManager.Instance.currentState == RescueManager.RescueState.VictimRescued)
-                {
-                    RescueManager.Instance.PerformConsciousnessCheck();
+                    button.onClick.Invoke();
+                    break;
                 }
             }
         }
@@ -189,32 +204,6 @@ public class PlayerInteraction : MonoBehaviour
         if (interactionText != null)
         {
             interactionText.gameObject.SetActive(false);
-        }
-    }
-
-    private void TryInteractWithWorldUI()
-    {
-        PointerEventData pointerData = new PointerEventData(EventSystem.current);
-        pointerData.position = new Vector2(Screen.width / 2f, Screen.height / 2f);
-        List<RaycastResult> results = new List<RaycastResult>();
-        GraphicRaycaster[] raycasters = FindObjectsOfType<GraphicRaycaster>();
-        foreach (var raycaster in raycasters)
-        {
-            raycaster.Raycast(pointerData, results);
-        }
-
-        if (results.Count > 0)
-        {
-            foreach (var result in results)
-            {
-                Button button = result.gameObject.GetComponent<Button>();
-                if (button != null)
-                {
-                    Debug.Log("¡Clic en el botón del mundo: " + button.name);
-                    button.onClick.Invoke();
-                    break;
-                }
-            }
         }
     }
 }
