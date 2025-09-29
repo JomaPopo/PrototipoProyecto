@@ -1,0 +1,120 @@
+using UnityEngine;
+
+public class NPCController : MonoBehaviour
+{
+    public enum State { Swimming, Drowning }
+
+    [Header("Estado Actual")]
+    // Hacemos la variable privada para que nadie la cambie desde fuera
+    private State currentState;
+    // ¡NUEVO! Creamos una propiedad pública para que otros scripts puedan LEER el estado
+    public State CurrentState => currentState;
+
+    // ... el resto de tu script no necesita cambios ...
+
+    //--- (Solo pego el resto del código para que tengas el contexto completo) ---
+    [Header("Parámetros de Movimiento")]
+    public float swimmingSpeed = 3.5f;
+    public float rotationSpeed = 5f;
+
+    [Header("Parámetros de Comportamiento")]
+    public float minSwimTime = 15f;
+    public float maxSwimTime = 40f;
+    private float swimTimer;
+
+    [Header("Referencias")]
+    public GameObject drowningIndicator;
+    public Transform[] swimWaypoints;
+    private Transform currentWaypoint;
+
+    private Rigidbody rb;
+
+    void Awake()
+    {
+        rb = GetComponent<Rigidbody>();
+    }
+
+    void Start()
+    {
+        EnterSwimmingState();
+    }
+
+    void Update()
+    {
+        if (currentState == State.Swimming)
+        {
+            swimTimer -= Time.deltaTime;
+
+            if (swimTimer <= 0)
+            {
+                EnterDrowningState();
+            }
+            else if (currentWaypoint != null && Vector3.Distance(transform.position, currentWaypoint.position) < 1.5f)
+            {
+                SetNewRandomWaypoint();
+            }
+        }
+    }
+
+    void FixedUpdate()
+    {
+        if (currentState == State.Swimming && currentWaypoint != null)
+        {
+            MoveAndRotateTowardsWaypoint();
+        }
+    }
+
+    void EnterSwimmingState()
+    {
+        Debug.Log("Entrando al estado: Nadando");
+        currentState = State.Swimming;
+
+        if (drowningIndicator != null)
+            drowningIndicator.SetActive(false);
+
+        swimTimer = Random.Range(minSwimTime, maxSwimTime);
+        SetNewRandomWaypoint();
+    }
+
+    void EnterDrowningState()
+    {
+        Debug.LogWarning("Entrando al estado: Ahogándose");
+        currentState = State.Drowning;
+
+        if (drowningIndicator != null)
+            drowningIndicator.SetActive(true);
+
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+    }
+
+    void SetNewRandomWaypoint()
+    {
+        if (swimWaypoints.Length > 0)
+        {
+            int randomIndex = Random.Range(0, swimWaypoints.Length);
+            currentWaypoint = swimWaypoints[randomIndex];
+            Debug.Log($"Nuevo destino: {currentWaypoint.name}");
+        }
+        else
+        {
+            Debug.LogError("No se han asignado Waypoints de nado en el Inspector.");
+            EnterDrowningState();
+        }
+    }
+
+    void MoveAndRotateTowardsWaypoint()
+    {
+        Vector3 direction = (currentWaypoint.position - transform.position).normalized;
+        direction.y = 0;
+
+        Vector3 newPosition = transform.position + direction * swimmingSpeed * Time.fixedDeltaTime;
+        rb.MovePosition(newPosition);
+
+        if (direction != Vector3.zero)
+        {
+            Quaternion lookRotation = Quaternion.LookRotation(direction);
+            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.fixedDeltaTime * rotationSpeed);
+        }
+    }
+}
