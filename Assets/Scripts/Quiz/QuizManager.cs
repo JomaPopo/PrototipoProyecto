@@ -33,7 +33,7 @@ public class QuizManager : MonoBehaviour
             panels[0].SetActive(true);
 
         Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+       Cursor.visible = true;
     }
 
     public void OnContinue()
@@ -90,7 +90,7 @@ public class QuizManager : MonoBehaviour
         if (cameraLookScript != null)
             cameraLookScript.enabled = true;
 
-        Cursor.lockState = CursorLockMode.Locked;
+       Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
         if (quizFinishedEvent != null)

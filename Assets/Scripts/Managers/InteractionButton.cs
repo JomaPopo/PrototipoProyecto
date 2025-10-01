@@ -2,8 +2,6 @@ using UnityEngine;
 
 public class InteractionButton : MonoBehaviour
 {
-   
-
     [Header("Tipo de Parte del Cuerpo")]
     public BodyPart partType;
 

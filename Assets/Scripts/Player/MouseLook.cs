@@ -21,7 +21,18 @@ public class MouseLook : MonoBehaviour
 
         ProcessLook(mouseDelta);
     }
-
+    public void EnableLook()
+    {
+        this.enabled = true; 
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
+    public void DisableLook()
+    {
+        this.enabled = false;
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
     public void ProcessLook(Vector2 mouseDelta)
     {
         float mouseX = mouseDelta.x * mouseSensitivity * Time.fixedDeltaTime;

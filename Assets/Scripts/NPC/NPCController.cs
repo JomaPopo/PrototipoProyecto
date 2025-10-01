@@ -21,7 +21,7 @@ public class NPCController : MonoBehaviour
     [Header("Referencias")]
     public GameObject drowningIndicator;
     public Transform[] swimWaypoints;
-    public GameObject interactionCanvas;
+    public GameObject interactionCanvas,panelViaRespiratoria;
     private Transform currentWaypoint;
 
     private Rigidbody rb;
@@ -81,6 +81,8 @@ public class NPCController : MonoBehaviour
     void EnterDrowningState()
     {
         Debug.LogWarning("Entrando al estado: Ahogándose");
+        AudioManager.Instance.PlaySFX(AudioManager.Instance.instructor_AlertaEmergencia);
+
         currentState = State.Drowning;
 
         if (drowningIndicator != null)

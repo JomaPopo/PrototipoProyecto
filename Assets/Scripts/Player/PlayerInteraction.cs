@@ -57,6 +57,7 @@ public class PlayerInteraction : MonoBehaviour
             {
                 ShowInteractionText("Presiona [E] para Rescatar");
                 hitSomethingInteractable = true;
+
             }
         }
 
@@ -93,6 +94,7 @@ public class PlayerInteraction : MonoBehaviour
             if (currentlyCarriedNPC != null)
             {
                 TryToDropNPC();
+
             }
             else
             {
@@ -108,6 +110,15 @@ public class PlayerInteraction : MonoBehaviour
             if (crosshair != null && !crosshair.activeSelf) crosshair.SetActive(true);
 
             if (Input.GetMouseButtonDown(0)) 
+            {
+                TryInteractWithWorldUI();
+            }
+        }
+        if (currentlyCarriedNPC == null && RescueManager.Instance.currentState == RescueManager.RescueState.AirwayCheck)
+        {
+            if (crosshair != null && !crosshair.activeSelf) crosshair.SetActive(true);
+
+            if (Input.GetMouseButtonDown(0))
             {
                 TryInteractWithWorldUI();
             }
@@ -139,6 +150,8 @@ public class PlayerInteraction : MonoBehaviour
         npcToCarry.transform.SetParent(carryPosition);
         npcToCarry.transform.localPosition = Vector3.zero;
         npcToCarry.transform.localRotation = Quaternion.identity;
+        AudioManager.Instance.PlaySFX(AudioManager.Instance.instructor_ConfirmacionRescate);
+
     }
 
     private void TryToDropNPC()
