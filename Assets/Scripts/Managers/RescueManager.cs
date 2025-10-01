@@ -26,6 +26,8 @@ public class RescueManager : Singleton<RescueManager>
     [SerializeField] private GameObject radioPanel;
     public MouseLook playerMouseLook;
 
+    [SerializeField] private CPRManager cprManager;
+
     [Header("Estado Actual")]
     public RescueState currentState;
 
@@ -41,7 +43,6 @@ public class RescueManager : Singleton<RescueManager>
         }
 
         AudioManager.Instance.PlaySFX(AudioManager.Instance.instructor_BriefingInicial);
-        UIManager.Instance.ShowInstruction("wasa");
 
     }
     private void Update()
@@ -54,6 +55,8 @@ public class RescueManager : Singleton<RescueManager>
     public void StartRescueSequence(NPCController victim)
     {
         Debug.Log("¡Secuencia de rescate iniciada!");
+        UIManager.Instance.ShowInstruction("Este atento¡");
+
         currentVictim = victim;
         if (currentVictim.interactionCanvas != null)
         {
@@ -73,6 +76,7 @@ public class RescueManager : Singleton<RescueManager>
             case RescueState.VictimRescued:
                 Debug.Log("Instructor: ¡Buen trabajo! Ahora comprueba si responde.");
                 AudioManager.Instance.PlaySFX(AudioManager.Instance.instructor_ComprobarConciencia);
+                UIManager.Instance.ShowInstruction("Toca sus hombros para ver si responde");
 
                 break;
 
@@ -83,7 +87,8 @@ public class RescueManager : Singleton<RescueManager>
                 {
                     currentVictim.interactionCanvas.SetActive(false);
                 }
-               
+                UIManager.Instance.ShowInstruction("Usa tu radio para pedir ayuda");
+
                 TransitionToState(RescueState.CallForHelp);
 
                 break;
@@ -102,13 +107,31 @@ public class RescueManager : Singleton<RescueManager>
                 mentonTocado = false;
                 if (currentVictim.interactionCanvas != null)
                     currentVictim.interactionCanvas.SetActive(true);
-                
+
+                UIManager.Instance.ShowInstruction("Toca el menton y la frente");
+
+
                 break;
 
             case RescueState.BreathingCheck:
                 Debug.Log("Instructor: ¡Bien hecho! Vías respiratorias abiertas. Ahora, comprueba si respira.");
                 if (currentVictim.interactionCanvas != null)
-                    currentVictim.interactionCanvas.SetActive(false); 
+                    currentVictim.interactionCanvas.SetActive(false);
+                TransitionToState(RescueState.PerformCPR);
+
+                break;
+            case RescueState.PerformCPR:
+                UIManager.Instance.ShowInstruction("¡Inicia el RCP! Sigue el ritmo de la guía y presiona Q y E a la vez.");
+                if (currentVictim.interactionCanvas != null)
+                    currentVictim.interactionCanvas.SetActive(false);
+                if (playerMouseLook != null)
+                    playerMouseLook.EnableLook();
+
+                if (cprManager != null)
+                {
+                    cprManager.enabled = true; 
+                    cprManager.StartCPR();
+                }
                 break;
         }
     }
@@ -165,7 +188,7 @@ public class RescueManager : Singleton<RescueManager>
             if (frenteTocada && mentonTocado)
             {
                 Debug.Log("¡MANIOBRA COMPLETA! Vías aéreas abiertas.");
-                AudioManager.Instance.PlaySFX(AudioManager.Instance.instructor_FeedbackIncorrectoConciencia);
+               // AudioManager.Instance.PlaySFX(AudioManager.Instance.instructor_FeedbackIncorrectoConciencia);
                 TransitionToState(RescueState.BreathingCheck);
             }
         }

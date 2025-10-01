@@ -79,11 +79,13 @@ public class PlayerInteraction : MonoBehaviour
             else
             {
                 ShowInteractionText("Busca un lugar seguro (una toalla)");
+                UIManager.Instance.ShowInstruction("Lleva ala victima una zona segura");
             }
         }
         else
         {
             ShowInteractionText("Busca un lugar seguro (una toalla)");
+            UIManager.Instance.ShowInstruction("Lleva ala victima una zona segura");
         }
     }
 

@@ -40,6 +40,24 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "CPR_Izquierda",
+                    "type": "Button",
+                    "id": "1c9a676b-fabe-4c51-b6d1-85c674433fa4",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "CPR_Derecha",
+                    "type": "Button",
+                    "id": "7615c49c-a000-4562-b2c6-bcfa822e0937",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -128,6 +146,28 @@
                     "processors": "",
                     "groups": "",
                     "action": "Interactuar",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "682c6d4a-a8cd-460f-b455-15506f0d122b",
+                    "path": "<Keyboard>/q",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "CPR_Izquierda",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "fbc8afe9-2f75-4fc0-8c4b-ae0d49420451",
+                    "path": "<Keyboard>/r",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "CPR_Derecha",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
