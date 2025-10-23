@@ -2,48 +2,62 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
-using UnityEngine.InputSystem; 
+using UnityEngine.InputSystem;
 
 public class CPRManager : MonoBehaviour
 {
-    [Header("Configuración del RCP")]
-    [SerializeField] private float beatsPerMinute = 110f;
-    [SerializeField] private float timingWindow = 0.15f;
-    [SerializeField] private float perfectHoldTime = 0.2f;
-    [SerializeField] private float holdTimeWindow = 0.08f;
+    [Header("Configuración del Ritmo")]
+    [Tooltip("Cuánto 'sube' la barra con cada pulsación correcta.")]
+    [SerializeField] private float rhythmIncreaseAmount = 5f;
+    [Tooltip("Cuánto 'baja' la barra por segundo si no se presiona nada.")]
+    [SerializeField] private float rhythmDecayRate = 15f;
+    [Tooltip("El valor mínimo del rango perfecto.")]
+    [SerializeField] private float targetZoneMin = 100f;
+    [Tooltip("El valor máximo del rango perfecto.")]
+    [SerializeField] private float targetZoneMax = 120f;
+    [SerializeField] private float riseSmoothness = 10f;
+
 
     [Header("Referencias de UI")]
     [SerializeField] private GameObject cprPanel;
     [SerializeField] private TextMeshProUGUI compressionCountText;
-    [SerializeField] private Image rhythmGuideIndicator;
     [SerializeField] private TextMeshProUGUI feedbackText;
     [SerializeField] private Slider qualityBar;
+    [SerializeField] private Slider rhythmSlider;
 
-    [Header("Referencias del Jugador (Arrastrar en Inspector)")]
+    [Header("Referencias del Jugador")]
     [SerializeField] private PlayerMovement playerMovement;
     [SerializeField] private MouseLook mouseLook;
 
+    // --- Variables de control ---
     private int compressionCount = 0;
-    private float beatInterval;
-    private float nextBeatTime;
-    private bool canPress = false;
-    private bool inputPressedThisBeat = false;
-    private float pressStartTime;
     private float totalQualityScore = 0;
+    private float currentRhythmValue = 0f; 
+    private float targetRhythmValue = 0f;  
+    private bool canPress = true;  
 
     private bool isLeftHandDown = false;
     private bool isRightHandDown = false;
 
     public void StartCPR()
     {
-        Debug.Log("Iniciando mini-juego de RCP...");
         cprPanel.SetActive(true);
         compressionCount = 0;
         totalQualityScore = 0;
-        UpdateUI();
 
-        beatInterval = 60f / beatsPerMinute;
-        nextBeatTime = Time.time + beatInterval;
+        rhythmSlider.minValue = 80;
+        rhythmSlider.maxValue = 140;
+
+        // --- ¡AQUÍ ESTÁ EL CAMBIO! ---
+        // Calculamos el punto medio de la zona objetivo para empezar ahí.
+        float startingRhythmValue = (targetZoneMin + targetZoneMax) / 2f; // Ej: (100 + 120) / 2 = 110
+
+        // Inicializamos ambos valores en el punto medio.
+        targetRhythmValue = startingRhythmValue;
+        currentRhythmValue = startingRhythmValue;
+
+        UpdateUI();
+        feedbackText.gameObject.SetActive(false);
 
         if (playerMovement != null) playerMovement.enabled = false;
         if (mouseLook != null) mouseLook.DisableLook();
@@ -51,112 +65,85 @@ public class CPRManager : MonoBehaviour
 
     void Update()
     {
-        if (Time.time >= nextBeatTime)
+        // 1. Aplicamos el decaimiento al valor REAL (target).
+        if (targetRhythmValue > rhythmSlider.minValue)
         {
-            StartCoroutine(RhythmPulse());
-            canPress = true;
-            inputPressedThisBeat = false;
-            nextBeatTime += beatInterval;
+            targetRhythmValue -= rhythmDecayRate * Time.deltaTime;
         }
-        else if (Time.time >= nextBeatTime - timingWindow)
-        {
-            canPress = true;
-        }
-        else
-        {
-            canPress = false;
-        }
+        targetRhythmValue = Mathf.Max(targetRhythmValue, rhythmSlider.minValue);
+
+        // 2. El valor VISUAL (current) persigue suavemente al valor REAL. ¡AQUÍ ESTÁ LA MAGIA!
+        currentRhythmValue = Mathf.Lerp(currentRhythmValue, targetRhythmValue, Time.deltaTime * riseSmoothness);
+
+        // 3. Actualizamos la barra con el valor visual suavizado.
+        rhythmSlider.value = currentRhythmValue;
+
+        // 4. La lógica del juego usa el valor REAL para ser precisa.
+        CheckRhythmQuality();
     }
 
+    // --- MANEJO DE INPUTS ---
     public void OnCPRLeft(InputAction.CallbackContext context)
     {
-        if (context.performed) 
-        {
-            isLeftHandDown = true;
-            CheckBothHandsPressed();
-        }
-        else if (context.canceled) 
-        {
-            isLeftHandDown = false;
-            CheckBothHandsReleased();
-        }
+        if (context.performed) isLeftHandDown = true;
+        else if (context.canceled) isLeftHandDown = false;
+        HandleInputState();
     }
 
     public void OnCPRRight(InputAction.CallbackContext context)
     {
-        if (context.performed)
+        if (context.performed) isRightHandDown = true;
+        else if (context.canceled) isRightHandDown = false;
+        HandleInputState();
+    }
+
+    private void HandleInputState()
+    {
+        bool bothHandsPressed = isLeftHandDown && isRightHandDown;
+
+        if (bothHandsPressed && canPress)
         {
-            isRightHandDown = true;
-            CheckBothHandsPressed();
+            canPress = false;
+
+            // "Bombeamos" el valor REAL (target).
+            targetRhythmValue += rhythmIncreaseAmount;
+            targetRhythmValue = Mathf.Min(targetRhythmValue, rhythmSlider.maxValue);
+
+            compressionCount++;
+            UpdateUI();
+            if (compressionCount >= 100)
+            {
+                EndCPRSequence();
+            }
         }
-        else if (context.canceled)
+        else if (!bothHandsPressed)
         {
-            isRightHandDown = false;
-            CheckBothHandsReleased();
+            canPress = true;
         }
     }
 
-    private void CheckBothHandsPressed()
+    // --- LÓGICA DE CALIDAD (Usa el valor real para precisión) ---
+    private void CheckRhythmQuality()
     {
-        if (!canPress || inputPressedThisBeat || !(isLeftHandDown && isRightHandDown))
+        // Usamos targetRhythmValue para que el feedback sea instantáneo y preciso.
+        if (targetRhythmValue >= targetZoneMin && targetRhythmValue <= targetZoneMax)
         {
-            return;
+            totalQualityScore += Time.deltaTime * 5;
+            ShowFeedback("¡RITMO PERFECTO!", Color.green);
         }
-
-        pressStartTime = Time.time;
-        Debug.Log("Ambas manos presionadas.");
-    }
-
-    private void CheckBothHandsReleased()
-    {
-        if (inputPressedThisBeat) return;
-
-        if (pressStartTime > 0)
+        else if (targetRhythmValue < targetZoneMin)
         {
-            float holdDuration = Time.time - pressStartTime;
-            Debug.Log("Compresión completada. Duración: " + holdDuration);
-            CheckCompressionQuality(holdDuration);
-            inputPressedThisBeat = true; 
-            pressStartTime = 0; 
-            isLeftHandDown = false;
-            isRightHandDown = false;
-        }
-    }
-
-    private void CheckCompressionQuality(float holdDuration)
-    {
-        if (Time.time > nextBeatTime + timingWindow)
-        {
-            ShowFeedback("¡MUY LENTO!", Color.red);
-            totalQualityScore -= 5;
-            return;
-        }
-        if (holdDuration < perfectHoldTime - holdTimeWindow)
-        {
-            ShowFeedback("¡MÁS PROFUNDO!", Color.yellow);
-            totalQualityScore += 5;
-        }
-        else if (holdDuration > perfectHoldTime + holdTimeWindow)
-        {
-            ShowFeedback("¡NO TE APOYES!", Color.yellow);
-            totalQualityScore += 5;
+            ShowFeedback("¡MÁS RÁPIDO!", Color.yellow);
         }
         else
         {
-            ShowFeedback("¡PERFECTO!", Color.green);
-            totalQualityScore += 10;
-        }
-        compressionCount++;
-        UpdateUI();
-        if (compressionCount >= 30)
-        {
-            EndCPRSequence();
+            ShowFeedback("¡MUY RÁPIDO!", Color.red);
         }
     }
 
+    // --- FUNCIONES DE UI Y FIN ---
     private void EndCPRSequence()
     {
-        Debug.Log("Ciclo de 30 compresiones terminado. Puntuación: " + totalQualityScore);
         cprPanel.SetActive(false);
         if (playerMovement != null) playerMovement.enabled = true;
         if (mouseLook != null) mouseLook.EnableLook();
@@ -165,26 +152,16 @@ public class CPRManager : MonoBehaviour
 
     private void UpdateUI()
     {
-        compressionCountText.text = $"{compressionCount} / 30";
-        qualityBar.value = totalQualityScore / 300f;
+        compressionCountText.text = $"{compressionCount} / 100";
+        qualityBar.value = totalQualityScore / 100f;
     }
 
     private void ShowFeedback(string message, Color color)
     {
+        if (feedbackText.gameObject.activeInHierarchy && feedbackText.text == message) return;
+
         feedbackText.text = message;
         feedbackText.color = color;
         feedbackText.gameObject.SetActive(true);
-        Invoke(nameof(HideFeedback), 0.5f);
-    }
-    private void HideFeedback()
-    {
-        feedbackText.gameObject.SetActive(false);
-    }
-
-    private IEnumerator RhythmPulse()
-    {
-        rhythmGuideIndicator.color = Color.white;
-        yield return new WaitForSeconds(0.1f);
-        rhythmGuideIndicator.color = new Color(1, 1, 1, 0.5f);
     }
 }

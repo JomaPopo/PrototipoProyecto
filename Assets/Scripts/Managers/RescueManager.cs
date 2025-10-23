@@ -41,8 +41,9 @@ public class RescueManager : Singleton<RescueManager>
         {
             radioPanel.SetActive(false);
         }
+        VignetteManager.Instance.ShowVignette(1.5f, Color.red, 0.9f);
 
-        AudioManager.Instance.PlaySFX(AudioManager.Instance.instructor_BriefingInicial);
+        AudioManager.Instance.PlayVoice(AudioManager.Instance.instructor_BriefingInicial);
 
     }
     private void Update()
@@ -75,7 +76,7 @@ public class RescueManager : Singleton<RescueManager>
         {
             case RescueState.VictimRescued:
                 Debug.Log("Instructor: ¡Buen trabajo! Ahora comprueba si responde.");
-                AudioManager.Instance.PlaySFX(AudioManager.Instance.instructor_ComprobarConciencia);
+                AudioManager.Instance.PlayVoice(AudioManager.Instance.instructor_ComprobarConciencia);
                 UIManager.Instance.ShowInstruction("Toca sus hombros para ver si responde");
 
                 break;
@@ -154,14 +155,14 @@ public class RescueManager : Singleton<RescueManager>
             if (part == BodyPart.Hombros)
             {
                 Debug.Log("¡ACCIÓN CORRECTA! El jugador tocó los hombros.");
-                AudioManager.Instance.PlaySFX(AudioManager.Instance.playerCheckingConsciousness);
+                AudioManager.Instance.PlayVoice(AudioManager.Instance.playerCheckingConsciousness);
 
                 TransitionToState(RescueState.ConsciousnessCheck);
             }
             else 
             {
                 Debug.Log($"ACCIÓN INCORRECTA: El jugador tocó {part}.");
-                AudioManager.Instance.PlaySFX(AudioManager.Instance.instructor_FeedbackIncorrectoConciencia);
+                AudioManager.Instance.PlayVoice(AudioManager.Instance.instructor_FeedbackIncorrectoConciencia);
                 Debug.Log("Instructor (Feedback): ¡No! Toca sus hombros para ver si responde.");
             }
         }

@@ -81,7 +81,7 @@ public class NPCController : MonoBehaviour
     void EnterDrowningState()
     {
         Debug.LogWarning("Entrando al estado: Ahogándose");
-        AudioManager.Instance.PlaySFX(AudioManager.Instance.instructor_AlertaEmergencia);
+        AudioManager.Instance.PlayVoice(AudioManager.Instance.instructor_AlertaEmergencia);
         UIManager.Instance.ShowInstruction("Busca a la persona ahogada");
 
         currentState = State.Drowning;

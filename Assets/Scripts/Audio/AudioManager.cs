@@ -67,8 +67,8 @@ public class AudioManager : SingletonPersistent<AudioManager>
     {
         if (voiceSource != null && clip != null)
         {
-            voiceSource.Stop();
-            voiceSource.PlayOneShot(clip);
+            voiceSource.clip = clip;
+            voiceSource.Play();
         }
     }
     public void PlayRadioCallSequence()

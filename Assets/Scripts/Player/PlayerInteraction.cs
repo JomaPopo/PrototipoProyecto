@@ -152,7 +152,7 @@ public class PlayerInteraction : MonoBehaviour
         npcToCarry.transform.SetParent(carryPosition);
         npcToCarry.transform.localPosition = Vector3.zero;
         npcToCarry.transform.localRotation = Quaternion.identity;
-        AudioManager.Instance.PlaySFX(AudioManager.Instance.instructor_ConfirmacionRescate);
+        AudioManager.Instance.PlayVoice(AudioManager.Instance.instructor_ConfirmacionRescate);
 
     }
 

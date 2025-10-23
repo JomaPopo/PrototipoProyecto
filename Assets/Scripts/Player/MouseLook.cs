@@ -18,31 +18,38 @@ public class MouseLook : MonoBehaviour
     public void OnLook(InputAction.CallbackContext context)
     {
         Vector2 mouseDelta = context.ReadValue<Vector2>();
-
         ProcessLook(mouseDelta);
     }
+
     public void EnableLook()
     {
-        this.enabled = true; 
+        this.enabled = true;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
+
     public void DisableLook()
     {
         this.enabled = false;
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
     }
+
     public void ProcessLook(Vector2 mouseDelta)
     {
-        float mouseX = mouseDelta.x * mouseSensitivity * Time.fixedDeltaTime;
-        float mouseY = mouseDelta.y * mouseSensitivity * Time.fixedDeltaTime;
+        // --- LA CORRECCIÓN ESTÁ AQUÍ ---
+        // Usamos Time.deltaTime para un movimiento suave e independiente del framerate.
+        float mouseX = mouseDelta.x * mouseSensitivity * Time.deltaTime;
+        float mouseY = mouseDelta.y * mouseSensitivity * Time.deltaTime;
 
+        // El resto de tu lógica es correcta.
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, -90f, 90f);
 
+        // Rotación vertical (arriba/abajo) se aplica a la cámara.
         transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
 
+        // Rotación horizontal (izquierda/derecha) se aplica al cuerpo del jugador.
         if (playerBody != null)
             playerBody.Rotate(Vector3.up * mouseX);
     }
