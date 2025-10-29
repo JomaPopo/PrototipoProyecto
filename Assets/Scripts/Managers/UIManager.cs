@@ -57,8 +57,7 @@ public class UIManager : Singleton<UIManager>
             Debug.LogError("UIManager: El panel de pausa, su texto o su botón 'Ok' no están asignados.");
             return;
         }
-
-        // Activamos el panel, vaciamos texto y ¡OCULTAMOS el botón Ok!
+        GameManager.Instance.PausarReloj();
         panelInstructionText.text = "";
         panelOkButton.gameObject.SetActive(false); // Ocultamos el botón al inicio
         pauseInstructionPanel.SetActive(true);
@@ -83,6 +82,8 @@ public class UIManager : Singleton<UIManager>
             // Asegúrate de que esta línea esté descomentada si usas el PauseManager
             RescueManager.Instance.OnPausePanelAcknowledged();
         }
+        GameManager.Instance.IniciarReloj();
+
     }
 
     // --- ¡CORUTINA DE TIPEO MEJORADA! ---

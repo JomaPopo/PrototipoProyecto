@@ -39,14 +39,9 @@ public class RescueManager : Singleton<RescueManager>
         nextStateAfterPause = RescueState.AwaitingRescue;
     }
 
-    // --- Esta función se llama desde PlayerInteraction.DropNPC ---
     public void StartRescueSequence(NPCController victim)
     {
-        // Solo podemos rescatar si estamos en el estado correcto
-        // ¡¡COMENTA O BORRA ESTA LÍNEA!!
-        // if (currentState != RescueState.AwaitingRescue) return;
-
-        // ¡AÑADE ESTA COMPROBACIÓN MEJOR! Evita iniciar dos veces si algo falla.
+       
         if (currentState == RescueState.VictimRescued || currentState == RescueState.ConsciousnessCheck)
         {
             Debug.LogWarning("StartRescueSequence llamada cuando ya había una secuencia en progreso. Ignorando.");
@@ -100,49 +95,42 @@ public class RescueManager : Singleton<RescueManager>
         switch (currentState)
         {
             case RescueState.AwaitingRescue:
-                // El jugador presionó "Ok" en la alerta inicial.
-                // ¡Este estado necesita movimiento!
+               
                 PauseManager.Instance.RegainControlFromUI();
                 UIManager.Instance.ShowInstruction("¡Rápido! ¡Rescata a la víctima y llévala a una zona segura!");
-                AudioManager.Instance.PlayVoice(AudioManager.Instance.instructor_AlertaEmergencia); // Audio de "¡Vamos!"
+                //AudioManager.Instance.PlayVoice(AudioManager.Instance.instructor_AlertaEmergencia); // Audio de "¡Vamos!"
                 break;
 
             case RescueState.VictimRescued:
-                // El jugador presionó "Ok" en el panel de la toalla.
-                // ¡Este estado necesita un cursor libre para los botones!
-                // (PauseManager.FreeCursorForUI ya fue llamado, así que no hacemos nada con los controles)
+               
                 UIManager.Instance.ShowInstruction("Toca sus hombros para ver si responde");
                 AudioManager.Instance.PlayVoice(AudioManager.Instance.instructor_ComprobarConciencia);
                 if (currentVictim != null && currentVictim.interactionCanvas != null)
-                    currentVictim.interactionCanvas.SetActive(true); // Mostramos botones del cuerpo
+                    currentVictim.interactionCanvas.SetActive(true);
                 break;
 
             case RescueState.ConsciousnessCheck:
-                // Este estado ahora solo es un panel de pausa.
                 UIManager.Instance.ShowPausePanel("Sigue inconsciente. Necesitamos pedir ayuda profesional.");
-                PauseManager.Instance.FreeCursorForUI(); // Mantenemos cursor libre para el panel "Ok"
-                nextStateAfterPause = RescueState.CallForHelp; // Guardamos el siguiente paso
+                PauseManager.Instance.FreeCursorForUI(); 
+                nextStateAfterPause = RescueState.CallForHelp; 
                 break;
 
             case RescueState.CallForHelp:
-                // ¡Este estado necesita control de cámara!
                 PauseManager.Instance.RegainControlFromUI();
                 UIManager.Instance.ShowInstruction("Activa la radio para pedir asistencia médica.");
                 if (radioPanel != null) radioPanel.SetActive(true);
                 break;
 
             case RescueState.AirwayCheck:
-                // ¡Este estado necesita un cursor libre para los botones!
                 PauseManager.Instance.FreeCursorForUI();
                 UIManager.Instance.ShowInstruction("Toca el menton y la frente");
                 AudioManager.Instance.PlayVoice(AudioManager.Instance.instructor_AbrirViasAereas);
                 frenteTocada = false; mentonTocado = false;
                 if (currentVictim != null && currentVictim.interactionCanvas != null)
-                    currentVictim.interactionCanvas.SetActive(true); // Mostramos botones del cuerpo
+                    currentVictim.interactionCanvas.SetActive(true); 
                 break;
 
             case RescueState.PerformCPR:
-                // ¡Este estado necesita control de cámara!
                 PauseManager.Instance.RegainControlFromUI();
                 UIManager.Instance.ShowInstruction("¡Inicia el RCP! Sigue el ritmo de la guía y presiona Q y E a la vez.");
                 if (cprManager != null)
@@ -154,19 +142,15 @@ public class RescueManager : Singleton<RescueManager>
         }
     }
 
-    // --- FUNCIONES LLAMADAS POR ACCIONES ---
 
     public void OnRadioCallMade()
     {
-        // Solo actuar si estamos en el estado correcto
         if (currentState != RescueState.CallForHelp) return;
 
         Debug.Log("OnRadioCallMade: Iniciando secuencia de audio y mostrando panel.");
 
-        // Ocultamos la UI de la radio si está visible
         if (radioPanel != null) radioPanel.SetActive(false);
 
-        // 1. Iniciamos la secuencia de audio INMEDIATAMENTE
         AudioManager.Instance.PlayRadioCallSequence();
 
         // 2. Mostramos el panel de pausa INMEDIATAMENTE

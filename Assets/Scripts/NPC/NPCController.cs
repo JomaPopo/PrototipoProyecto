@@ -132,7 +132,7 @@ public class NPCController : MonoBehaviour
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
 
-        RescueManager.Instance.TriggerInitialAlert("Tu mensaje aquí");
+        RescueManager.Instance.TriggerInitialAlert("Bueno una persona esta en problemas tienes que encontrarla y rescatarla en menos de 4 minutos");
         //PauseManager.Instance.RegainControlFromUI();
     }
 
