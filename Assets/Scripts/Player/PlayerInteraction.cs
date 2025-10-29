@@ -3,6 +3,7 @@ using TMPro;
 using System.Collections.Generic;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using System.Collections; 
 
 public class PlayerInteraction : MonoBehaviour
 {
@@ -18,6 +19,7 @@ public class PlayerInteraction : MonoBehaviour
     private Camera playerCamera;
     private NPCController currentlyCarriedNPC = null;
     private Rigidbody carriedNpcRigidbody = null;
+    private Collider carriedNpcCollider = null;
 
     void Start()
     {
@@ -143,17 +145,21 @@ public class PlayerInteraction : MonoBehaviour
             }
         }
     }
+
     private void PickUpNPC(NPCController npcToCarry)
     {
         currentlyCarriedNPC = npcToCarry;
         carriedNpcRigidbody = npcToCarry.GetComponent<Rigidbody>();
+        carriedNpcCollider = npcToCarry.GetComponent<Collider>(); // <--- Guardamos el collider
+
         HideInteractionText();
+
         if (carriedNpcRigidbody != null) carriedNpcRigidbody.isKinematic = true;
+
         npcToCarry.transform.SetParent(carryPosition);
         npcToCarry.transform.localPosition = Vector3.zero;
         npcToCarry.transform.localRotation = Quaternion.identity;
         AudioManager.Instance.PlayVoice(AudioManager.Instance.instructor_ConfirmacionRescate);
-
     }
 
     private void TryToDropNPC()
@@ -164,11 +170,49 @@ public class PlayerInteraction : MonoBehaviour
             RescueZone zone = hit.collider.GetComponent<RescueZone>();
             if (zone != null)
             {
-                DropNPC(zone);
+                // Llamamos a la Corutina
+                StartCoroutine(DropNPCSequence(zone));
             }
         }
     }
+    private IEnumerator DropNPCSequence(RescueZone zone)
+    {
+        // Guardamos referencias ANTES de limpiar las variables de clase
+        NPCController npcToDrop = currentlyCarriedNPC;
+        Rigidbody rbToDrop = carriedNpcRigidbody;
+        Collider colToDrop = carriedNpcCollider;
 
+        // Limpiamos las variables de clase INMEDIATAMENTE para evitar doble input
+        currentlyCarriedNPC = null;
+        carriedNpcRigidbody = null;
+        carriedNpcCollider = null;
+
+        // 1. Soltarlo del padre
+        npcToDrop.transform.SetParent(null);
+
+        // 2. Desactivar collider para evitar choque inicial
+        if (colToDrop != null) colToDrop.enabled = false;
+
+        // 3. Posicionar y Rotar
+        npcToDrop.transform.position = zone.dropPoint.position;
+        npcToDrop.transform.rotation = zone.dropPoint.rotation;
+
+        // 4. Esperar un frame de física para que la posición se asiente
+        yield return new WaitForFixedUpdate();
+
+        // 5. Reactivar collider
+        if (colToDrop != null) colToDrop.enabled = true;
+
+        // 6. Reactivar la física (Rigidbody)
+        if (rbToDrop != null) rbToDrop.isKinematic = false;
+
+        // --- ¡LA CORRECCIÓN MÁS IMPORTANTE! ---
+        // 7. Notificar al RescueManager con la referencia correcta
+        RescueManager.Instance.StartRescueSequence(npcToDrop); // Usamos npcToDrop
+
+        // 8. Notificar al NPC
+        npcToDrop.OnRescued();
+    }
     private void DropNPC(RescueZone zone)
     {
         currentlyCarriedNPC.transform.SetParent(null);
