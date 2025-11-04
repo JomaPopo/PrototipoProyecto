@@ -131,8 +131,8 @@ public class NPCController : MonoBehaviour
             drowningIndicator.SetActive(true);
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
-
-        RescueManager.Instance.TriggerInitialAlert("Bueno una persona esta en problemas tienes que encontrarla y rescatarla en menos de 4 minutos");
+        string mensaje = "¡Persona ahogándose! ¡Tienes 4 minutos!";
+        RescueManager.Instance.TriggerInitialAlert_VR(mensaje, 240.0f);
         //PauseManager.Instance.RegainControlFromUI();
     }
 
@@ -151,10 +151,7 @@ public class NPCController : MonoBehaviour
         if (drowningIndicator != null)
             drowningIndicator.SetActive(false);
 
-        // --- LÍNEA AÑADIDA PARA GIRAR 180° ---
-        // Esto ajusta la rotación en Y a 180, pero mantiene la rotación en X y Z
-        // que la animación "Echado" pueda estar usando.
-       // cuerpoNPC.transform.eulerAngles = new Vector3(-88.595f, -257.637f, 80.198f);
+       
     }
 
     void SetNewRandomWaypoint()

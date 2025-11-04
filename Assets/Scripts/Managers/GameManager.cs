@@ -23,7 +23,9 @@ public class GameManager : Singleton<GameManager>
         if (panelDerrota != null)
             panelDerrota.SetActive(false); 
 
-        ActualizarTextoReloj(tiempoRestante); // Mostramos el tiempo inicial
+        ActualizarTextoReloj(tiempoRestante);
+        relojActivo = false;
+
     }
 
     void Update()
@@ -57,16 +59,8 @@ public class GameManager : Singleton<GameManager>
     /// </summary>
     void ActualizarTextoReloj(float tiempo)
     {
-        if (textoReloj == null) return; // No hacer nada si no hay texto asignado
-
-        if (tiempo < 0) tiempo = 0;
-
-        // Calculamos minutos y segundos
-        float minutos = Mathf.FloorToInt(tiempo / 60);
-        float segundos = Mathf.FloorToInt(tiempo % 60);
-
-        // Actualizamos el texto con el formato 00:00
-        textoReloj.text = string.Format("{0:00}:{1:00}", minutos, segundos);
+        if (textoReloj == null) return;
+        textoReloj.text = GetFormattedTime();
     }
 
     /// <summary>
@@ -103,5 +97,12 @@ public class GameManager : Singleton<GameManager>
     public void PausarReloj()
     {
         relojActivo = false;
+    }
+    public string GetFormattedTime()
+    {
+        float tiempo = (tiempoRestante < 0) ? 0 : tiempoRestante;
+        float minutos = Mathf.FloorToInt(tiempo / 60);
+        float segundos = Mathf.FloorToInt(tiempo % 60);
+        return string.Format("{0:00}:{1:00}", minutos, segundos);
     }
 }

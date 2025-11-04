@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.InputSystem.Haptics;
 public enum BodyPart { Hombros, Cabeza, Pecho, Manos, Pies, Rodilla, Frente, Menton }
 public class RescueManager : Singleton<RescueManager>
 {
@@ -29,16 +30,31 @@ public class RescueManager : Singleton<RescueManager>
         if (currentState != RescueState.None) return;
 
         Debug.Log("Alerta Inicial Recibida.");
-        // 1. Mostramos el panel de pausa con el mensaje de alerta
         UIManager.Instance.ShowPausePanel(alertMessage);
 
-        // 2. Le decimos al PauseManager que detenga al jugador y libere el cursor
         PauseManager.Instance.FreeCursorForUI();
 
-        // 3. Guardamos el estado al que iremos DESPUÉS de que el jugador pulse "Ok"
         nextStateAfterPause = RescueState.AwaitingRescue;
     }
+    public void TriggerInitialAlert_VR(string alertMessage, float emergencyTime)
+    {
+        // 1. ¡INICIA EL RELOJ!
+        GameManager.Instance.IniciarReloj();
 
+        // 2. ACTIVA LA ALERTA VISUAL (¡USANDO TU VIGNETTEMANAGER!)
+        // Llama a la NUEVA función que creamos en tu script
+        VignetteManager.Instance.TriggerEmergencyFlash(5.0f, Color.red, 0.6f);
+
+        
+
+        // 4. MUESTRA LA INFO EN LA MUÑECA (SIN PAUSAR)
+        // (Asumimos que tu UIManager tiene esta función, como sugerí)
+        string tiempoFormateado = "04:00";
+        UIManager.Instance.ShowWristAlert(alertMessage, tiempoFormateado);
+
+        // 5. TRANSICIONA AL SIGUIENTE ESTADO INMEDIATAMENTE
+        TransitionToState(RescueState.AwaitingRescue);
+    }
     public void StartRescueSequence(NPCController victim)
     {
        
@@ -49,13 +65,12 @@ public class RescueManager : Singleton<RescueManager>
         }
 
 
-        Debug.Log("StartRescueSequence EJECUTÁNDOSE AHORA."); // Añade este log para confirmar
+        Debug.Log("StartRescueSequence EJECUTÁNDOSE AHORA."); 
         currentVictim = victim;
 
-        // Mostramos el panel de pausa después de dejarlo en la toalla
         UIManager.Instance.ShowPausePanel("¡Has sacado a la víctima! Prepárate para evaluar.");
-        PauseManager.Instance.FreeCursorForUI(); // Detenemos al jugador y liberamos cursor
-        nextStateAfterPause = RescueState.VictimRescued; // Guardamos el siguiente paso
+        PauseManager.Instance.FreeCursorForUI(); 
+        nextStateAfterPause = RescueState.VictimRescued; 
     }
 
     public void OnPausePanelAcknowledged()
@@ -68,36 +83,30 @@ public class RescueManager : Singleton<RescueManager>
 
         Debug.Log("Jugador presionó 'Ok'. Procediendo al siguiente paso: " + nextStateAfterPause);
 
-        // Guardamos el estado al que vamos
         RescueState stateToTransitionTo = nextStateAfterPause;
-        // Reseteamos la variable de espera
         nextStateAfterPause = RescueState.None;
 
-        // Transicionamos al estado que estaba pendiente
         TransitionToState(stateToTransitionTo);
     }
 
     public void TransitionToState(RescueState newState)
     {
-        // Evitamos re-entrar al mismo estado si OnPausePanelAcknowledged se llama por error
         if (currentState == newState) return;
 
         currentState = newState;
         Debug.Log($"Nuevo estado de rescate: {newState}");
-        // Limpiamos CUALQUIER instrucción anterior (sea panel o tipeo)
         UIManager.Instance.HideInstructions();
         // UIManager.HidePausePanel(); // HidePausePanel ya se llama desde el botón Ok
 
-        // Aseguramos que los botones del NPC estén ocultos por defecto
         if (currentVictim != null && currentVictim.interactionCanvas != null)
             currentVictim.interactionCanvas.SetActive(false);
 
         switch (currentState)
         {
             case RescueState.AwaitingRescue:
-               
-                PauseManager.Instance.RegainControlFromUI();
-                UIManager.Instance.ShowInstruction("¡Rápido! ¡Rescata a la víctima y llévala a una zona segura!");
+
+                //PauseManager.Instance.RegainControlFromUI();
+                //UIManager.Instance.ShowWristObjective("¡Rápido! ¡Rescata a la víctima y llévala a una zona segura!");
                 //AudioManager.Instance.PlayVoice(AudioManager.Instance.instructor_AlertaEmergencia); // Audio de "¡Vamos!"
                 break;
 
@@ -153,17 +162,12 @@ public class RescueManager : Singleton<RescueManager>
 
         AudioManager.Instance.PlayRadioCallSequence();
 
-        // 2. Mostramos el panel de pausa INMEDIATAMENTE
         UIManager.Instance.ShowPausePanel("Llamada realizada. La ayuda está en camino. Presiona Ok para continuar.");
 
-        // 3. Liberamos el cursor y detenemos al jugador INMEDIATAMENTE
         PauseManager.Instance.FreeCursorForUI();
 
-        // 4. Guardamos el estado al que iremos DESPUÉS de pulsar "Ok"
         nextStateAfterPause = RescueState.AirwayCheck;
 
-        // YA NO usamos la corutina ShowPanelAfterDelay ni la pausa automática aquí.
-        // El juego ahora ESPERA a que el jugador presione "Ok".
     }
 
     public void BodyPartInteracted(BodyPart part)
@@ -173,27 +177,24 @@ public class RescueManager : Singleton<RescueManager>
             if (part == BodyPart.Hombros)
             {
                 AudioManager.Instance.PlayVoice(AudioManager.Instance.playerCheckingConsciousness);
-                // Pasamos DIRECTO al estado intermedio que mostrará el panel
                 TransitionToState(RescueState.ConsciousnessCheck);
             }
             else
             {
                 AudioManager.Instance.PlayVoice(AudioManager.Instance.instructor_FeedbackIncorrectoConciencia);
-                // Podríamos mostrar el panel con el feedback incorrecto aquí también si quisiéramos
                 UIManager.Instance.ShowPausePanel("¡No! Toca sus HOMBros para ver si responde. Presiona Ok para continuar.");
                 PauseManager.Instance.FreeCursorForUI();
-                nextStateAfterPause = RescueState.VictimRescued; // Volvemos al mismo paso
+                nextStateAfterPause = RescueState.VictimRescued; 
             }
         }
         else if (currentState == RescueState.AirwayCheck)
         {
             if (part == BodyPart.Frente) frenteTocada = true;
             else if (part == BodyPart.Menton) mentonTocado = true;
-            else UIManager.Instance.ShowInstruction("¡Concéntrate! FRENTE y MENTÓN."); // Feedback rápido aquí
+            else UIManager.Instance.ShowInstruction("¡Concéntrate! FRENTE y MENTÓN.");
 
             if (frenteTocada && mentonTocado)
             {
-                // Mostramos el panel de pausa antes de ir al RCP
                 UIManager.Instance.ShowPausePanel("¡Bien hecho! Vías respiratorias abiertas. Prepárate para el RCP.");
                 PauseManager.Instance.FreeCursorForUI();
                 nextStateAfterPause = RescueState.PerformCPR;

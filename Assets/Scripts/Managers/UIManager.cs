@@ -22,6 +22,11 @@ public class UIManager : Singleton<UIManager>
     private Coroutine panelTypingCoroutine;
     private readonly StringBuilder stringBuilder = new StringBuilder();
 
+    [Header("UI de Muñeca (VR)")]
+    [SerializeField] private GameObject wristCommunicatorCanvas;
+    [SerializeField] private TextMeshProUGUI wristText;
+    [SerializeField] private TextMeshProUGUI wristTimerText;
+
     protected override void Awake()
     {
         base.Awake();
@@ -86,8 +91,7 @@ public class UIManager : Singleton<UIManager>
 
     }
 
-    // --- ¡CORUTINA DE TIPEO MEJORADA! ---
-    // Ahora acepta el botón "Ok" como parámetro opcional
+    
     private IEnumerator TypeText(TextMeshProUGUI textComponent, string message, Button okButtonToShow)
     {
         var waitInstruction = new WaitForSeconds(typingSpeed);
@@ -102,26 +106,38 @@ public class UIManager : Singleton<UIManager>
             yield return waitInstruction;
         }
 
-        // --- ¡LA MAGIA ESTÁ AQUÍ! ---
-        // Si nos pasaron un botón Ok...
+        
         if (okButtonToShow != null)
         {
-            // ...lo activamos SOLO cuando el texto ha terminado de escribirse.
             okButtonToShow.gameObject.SetActive(true);
             Debug.Log("UIManager: Tipeo completo, botón 'Ok' activado.");
         }
 
-        // Reseteamos la corutina correspondiente
         if (textComponent == instructionText) typingCoroutine = null;
         if (textComponent == panelInstructionText) panelTypingCoroutine = null;
     }
 
-    // --- Función Auxiliar (Sin Cambios) ---
     private void StopAllTypingCoroutines()
     {
         if (typingCoroutine != null) StopCoroutine(typingCoroutine);
         if (panelTypingCoroutine != null) StopCoroutine(panelTypingCoroutine);
         typingCoroutine = null;
         panelTypingCoroutine = null;
+    }
+    public void ShowWristAlert(string message, string timerMessage)
+    {
+        if (wristCommunicatorCanvas != null)
+            wristCommunicatorCanvas.SetActive(true);
+
+        if (wristText != null)
+            wristText.text = message;
+
+        if (wristTimerText != null)
+            wristTimerText.text = timerMessage;
+    }
+    public void ShowWristObjective(string message)
+    {
+        if (wristText != null)
+            wristText.text = message;
     }
 }

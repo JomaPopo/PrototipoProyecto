@@ -3,7 +3,8 @@ using TMPro;
 using System.Collections.Generic;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using System.Collections; 
+using System.Collections;
+using UnityEngine.InputSystem;
 
 public class PlayerInteraction : MonoBehaviour
 {
@@ -16,22 +17,90 @@ public class PlayerInteraction : MonoBehaviour
     [SerializeField] private TextMeshProUGUI interactionText; 
     [SerializeField] private GameObject crosshair;
 
-    private Camera playerCamera;
+   // private Camera playerCamera;
     private NPCController currentlyCarriedNPC = null;
     private Rigidbody carriedNpcRigidbody = null;
     private Collider carriedNpcCollider = null;
 
+    private Transform currentPointer;
+
+    [Header("Referencias de Puntero")]
+    [SerializeField] private Transform playerCamera; // Para PC
+    [SerializeField] private Transform vrControllerHand; // Para VR
+    // Referencia al componente PlayerInput
+    private PlayerInput playerInput;
+
+    void Awake() // Awake() es mejor que Start() para esto
+    {
+        playerInput = GetComponent<PlayerInput>();
+
+        // Detectamos si estamos en modo VR
+        // (Asegúrate de tener "using UnityEngine.XR;")
+        if (UnityEngine.XR.XRSettings.isDeviceActive)
+        {
+            Debug.Log("Modo VR Detectado. Usando el mando como puntero.");
+            currentPointer = vrControllerHand;
+
+            // Ocultamos el cursor del mouse de PC
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+        else
+        {
+            Debug.Log("Modo PC Detectado. Usando la cámara como puntero.");
+            currentPointer = playerCamera;
+        }
+    }
     void Start()
     {
-        playerCamera = GetComponentInChildren<Camera>();
+        //playerCamera = GetComponentInChildren<Camera>();
         HideInteractionText();
     }
+
+    public void OnInteract(InputAction.CallbackContext context)
+    {
+        // Solo nos interesa cuando el botón es PRESIONADO
+        if (!context.performed) return;
+
+        if (currentlyCarriedNPC != null)
+        {
+            TryToDropNPC(); // Tu lógica de soltar
+        }
+        else
+        {
+            // ¡USA LA VARIABLE MÁGICA!
+            RaycastHit hit;
+            if (Physics.Raycast(currentPointer.position, currentPointer.forward, out hit, interactionDistance))
+            {
+                NPCController npc = hit.collider.GetComponent<NPCController>();
+                if (npc != null && npc.CurrentState == NPCController.State.Drowning)
+                {
+                    PickUpNPC(npc); // Tu lógica de agarrar
+                }
+            }
+        }
+    }
+
+    // ¡Esta función es llamada por el EVENTO del PlayerInput!
+    // Reemplaza a HandleUIClickInput()
+    public void OnSelect(InputAction.CallbackContext context)
+    {
+        if (!context.performed) return;
+
+        // Si estamos en la fase de RCP...
+        if (currentlyCarriedNPC == null &&
+            (RescueManager.Instance.currentState == RescueManager.RescueState.VictimRescued ||
+             RescueManager.Instance.currentState == RescueManager.RescueState.AirwayCheck))
+        {
+            TryInteractWithWorldUI();
+        }
+    }
+
 
     void Update()
     {
 
-        Debug.DrawRay(playerCamera.transform.position, playerCamera.transform.forward * interactionDistance, Color.cyan);
-
+        Debug.DrawRay(currentPointer.position, currentPointer.forward * interactionDistance, Color.cyan);
         if (currentlyCarriedNPC == null)
         {
             CheckForInteractables();
@@ -41,9 +110,9 @@ public class PlayerInteraction : MonoBehaviour
             CheckForRescueZone();
         }
 
-        HandleCarryInput();
+        //HandleCarryInput();
 
-        HandleUIClickInput();
+        //HandleUIClickInput();
     }
 
     private void CheckForInteractables()
@@ -51,15 +120,13 @@ public class PlayerInteraction : MonoBehaviour
         RaycastHit hit;
         bool hitSomethingInteractable = false;
 
-        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit, interactionDistance))
+        if (Physics.Raycast(currentPointer.position, currentPointer.forward, out hit, interactionDistance))
         {
             NPCController npc = hit.collider.GetComponent<NPCController>();
-
             if (npc != null && npc.CurrentState == NPCController.State.Drowning)
             {
-                ShowInteractionText("Presiona [E] para Rescatar");
+                ShowInteractionText("Presiona [Interact] para Rescatar"); // Texto genérico
                 hitSomethingInteractable = true;
-
             }
         }
 
@@ -160,6 +227,7 @@ public class PlayerInteraction : MonoBehaviour
         npcToCarry.transform.localPosition = Vector3.zero;
         npcToCarry.transform.localRotation = Quaternion.identity;
         AudioManager.Instance.PlayVoice(AudioManager.Instance.instructor_ConfirmacionRescate);
+        UIManager.Instance.ShowWristObjective("¡Bien hecho! ¡Ahora llévala a la zona segura!");
     }
 
     private void TryToDropNPC()
@@ -227,24 +295,17 @@ public class PlayerInteraction : MonoBehaviour
 
     private void TryInteractWithWorldUI()
     {
-        PointerEventData pointerData = new PointerEventData(EventSystem.current);
-        pointerData.position = new Vector2(Screen.width / 2f, Screen.height / 2f);
-        List<RaycastResult> results = new List<RaycastResult>();
-        GraphicRaycaster[] raycasters = FindObjectsOfType<GraphicRaycaster>();
-        foreach (var raycaster in raycasters)
+        RaycastHit hit;
+        // ¡USA LA VARIABLE MÁGICA!
+        if (Physics.Raycast(currentPointer.position, currentPointer.forward, out hit, interactionDistance))
         {
-            raycaster.Raycast(pointerData, results);
-        }
-        if (results.Count > 0)
-        {
-            foreach (var result in results)
+            // Esto asume que tus botones en el NPC tienen un Collider 3D
+            // (como un Box Collider) además del componente Button.
+            Button button = hit.collider.GetComponent<Button>();
+            if (button != null)
             {
-                Button button = result.gameObject.GetComponent<Button>();
-                if (button != null)
-                {
-                    button.onClick.Invoke();
-                    break;
-                }
+                Debug.Log($"Hit de {currentPointer.name} al botón: {button.name}");
+                button.onClick.Invoke(); // ¡Clic!
             }
         }
     }

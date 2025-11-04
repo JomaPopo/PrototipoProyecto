@@ -5,15 +5,12 @@ using System.Collections;
 
 public class VignetteManager : Singleton<VignetteManager>
 {
-
     [Header("Configuración de Post-Procesado")]
     [Tooltip("Arrastra aquí el GameObject que contiene tu Global Volume")]
     [SerializeField] private Volume postProcessVolume;
 
-    private Vignette vignette; 
-    private Coroutine activeVignetteCoroutine; 
-
-   
+    private Vignette vignette;
+    private Coroutine activeVignetteCoroutine;
 
     private void Start()
     {
@@ -25,10 +22,17 @@ public class VignetteManager : Singleton<VignetteManager>
         if (vignette == null)
         {
             Debug.LogError("¡Vignette no encontrado en el Volume Profile! Asegúrate de que el Volume esté asignado y tenga un override de Vignette.");
-            this.enabled = false; 
+            this.enabled = false;
+        }
+        else
+        {
+            // Asegúrate de que la viñeta esté inactiva al empezar
+            vignette.active = false;
         }
     }
-    public void ShowVignette(float duration, Color color, float intensity )
+
+    // --- Tu función original (la dejamos por si la usas en otro lado) ---
+    public void ShowVignette(float duration, Color color, float intensity)
     {
         if (vignette != null)
         {
@@ -36,7 +40,6 @@ public class VignetteManager : Singleton<VignetteManager>
             {
                 StopCoroutine(activeVignetteCoroutine);
             }
-
             activeVignetteCoroutine = StartCoroutine(VignetteEffect(duration, color, intensity));
         }
     }
@@ -45,13 +48,51 @@ public class VignetteManager : Singleton<VignetteManager>
     {
         vignette.color.Override(color);
         vignette.intensity.Override(intensity);
-
         vignette.active = true;
 
         yield return new WaitForSeconds(duration);
 
         vignette.active = false;
+        activeVignetteCoroutine = null;
+    }
 
-        activeVignetteCoroutine = null; 
+    // --- ¡NUEVA FUNCIÓN DE ALERTA! ---
+    // Esta función es para el parpadeo rojo de emergencia
+    public void TriggerEmergencyFlash(float duration, Color color, float maxIntensity)
+    {
+        if (vignette == null) return;
+
+        if (activeVignetteCoroutine != null)
+        {
+            StopCoroutine(activeVignetteCoroutine);
+        }
+
+        // Llamamos a la nueva corutina de parpadeo
+        activeVignetteCoroutine = StartCoroutine(FlashVignetteEffect(duration, color, maxIntensity));
+    }
+
+    // --- ¡NUEVA CORUTINA DE PARPADEO! ---
+    private IEnumerator FlashVignetteEffect(float duration, Color color, float maxIntensity)
+    {
+        vignette.color.Override(color);
+        vignette.active = true; // La activamos solo una vez
+
+        float timer = 0;
+        bool flashingOn = true;
+
+        // Mientras dure la alerta
+        while (timer < duration)
+        {
+            // Parpadea la intensidad (entre maxIntensity y la mitad)
+            vignette.intensity.Override(flashingOn ? maxIntensity : maxIntensity / 2f);
+            flashingOn = !flashingOn;
+
+            timer += 0.25f; // Controla la velocidad del parpadeo (4 veces por seg)
+            yield return new WaitForSeconds(0.25f);
+        }
+
+        // Al terminar, apágalo
+        vignette.active = false;
+        activeVignetteCoroutine = null;
     }
 }

@@ -1,4 +1,5 @@
 {
+    "version": 1,
     "name": "Controles",
     "maps": [
         {
@@ -67,6 +68,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
+                },
+                {
+                    "name": "Select",
+                    "type": "Button",
+                    "id": "f7206a3e-8d3a-4017-9efa-280f2ff2ca1c",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -226,6 +236,17 @@
                 },
                 {
                     "name": "",
+                    "id": "5432d6eb-7715-420a-97a0-32d21c63c132",
+                    "path": "<OculusTouchController>/{GripButton}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Interactuar",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "682c6d4a-a8cd-460f-b455-15506f0d122b",
                     "path": "<Keyboard>/q",
                     "interactions": "",
@@ -265,6 +286,28 @@
                     "processors": "",
                     "groups": "",
                     "action": "VrMoment",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7022047e-381b-4f63-b5e6-26743eb99a25",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Select",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "3ae18311-a9c9-4e26-a979-426f36cb9a90",
+                    "path": "<OculusTouchController>/{TriggerButton}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Select",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
