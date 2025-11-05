@@ -26,15 +26,16 @@ public class CPRManager : MonoBehaviour
     [SerializeField] private Slider rhythmSlider;
 
     [Header("Referencias del Jugador")]
-    [SerializeField] private PlayerMovement playerMovement;
-    [SerializeField] private MouseLook mouseLook;
+   // [SerializeField] private PlayerMovement playerMovement;
+    //[SerializeField] private MouseLook mouseLook;
 
     // --- Variables de control ---
     private int compressionCount = 0;
     private float totalQualityScore = 0;
     private float currentRhythmValue = 0f; 
     private float targetRhythmValue = 0f;  
-    private bool canPress = true;  
+    private bool canPress = true;
+    [SerializeField] private float minQualityToWin = 70f;
 
     private bool isLeftHandDown = false;
     private bool isRightHandDown = false;
@@ -59,8 +60,10 @@ public class CPRManager : MonoBehaviour
         UpdateUI();
         feedbackText.gameObject.SetActive(false);
 
-        if (playerMovement != null) playerMovement.enabled = false;
-        if (mouseLook != null) mouseLook.DisableLook();
+        //if (playerMovement != null) playerMovement.enabled = false;
+        // if (mouseLook != null) mouseLook.DisableLook();
+
+        PauseManager.Instance.FreeCursorForUI();
     }
 
     void Update()
@@ -145,9 +148,22 @@ public class CPRManager : MonoBehaviour
     private void EndCPRSequence()
     {
         cprPanel.SetActive(false);
-        if (playerMovement != null) playerMovement.enabled = true;
-        if (mouseLook != null) mouseLook.EnableLook();
+        
+        PauseManager.Instance.RegainControlFromUI();
         this.enabled = false;
+        if (totalQualityScore >= minQualityToWin)
+        {
+            // ¡GANASTE!
+            // Le decimos al GameManager que muestre la pantalla de victoria
+            GameManager.Instance.TriggerVictoria();
+        }
+        else
+        {
+            // ¡PERDISTE!
+            // Le decimos al GameManager que muestre la pantalla de derrota
+            string motivo = $"Calidad de RCP muy baja ({totalQualityScore:F0}%). La víctima no sobrevivió.";
+            GameManager.Instance.TriggerDerrota(motivo);
+        }
     }
 
     private void UpdateUI()

@@ -3027,6 +3027,7 @@ MonoBehaviour:
   backgroundMusic: {fileID: 8300000, guid: 14c449df8687d2549b89fcccba9f6844, type: 3}
   buttonClickSound: {fileID: 8300000, guid: e25fa415149fd8b4e83526e7a661c2d3, type: 3}
   radioSquelchSound: {fileID: 8300000, guid: 4fdc68da6d1a04a42908afd222fc1c8c, type: 3}
+  timbreDeLlamada: {fileID: 8300000, guid: 4bbafa44f5c1cb14482d0666f5e56da3, type: 3}
   playerCheckingConsciousness: {fileID: 8300000, guid: 4d3d46f7fde4c144c81200299e0e3af5, type: 3}
   playerReportVoice: {fileID: 8300000, guid: 60362b468d495614683c8e9ddf00b621, type: 3}
   instructor_BriefingInicial: {fileID: 8300000, guid: 1e72ecc619db2864f8a9c6866236886a, type: 3}

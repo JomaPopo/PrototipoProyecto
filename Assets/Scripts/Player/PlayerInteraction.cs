@@ -217,7 +217,7 @@ public class PlayerInteraction : MonoBehaviour
     {
         currentlyCarriedNPC = npcToCarry;
         carriedNpcRigidbody = npcToCarry.GetComponent<Rigidbody>();
-        carriedNpcCollider = npcToCarry.GetComponent<Collider>(); // <--- Guardamos el collider
+        carriedNpcCollider = npcToCarry.GetComponent<Collider>(); 
 
         HideInteractionText();
 
@@ -227,7 +227,7 @@ public class PlayerInteraction : MonoBehaviour
         npcToCarry.transform.localPosition = Vector3.zero;
         npcToCarry.transform.localRotation = Quaternion.identity;
         AudioManager.Instance.PlayVoice(AudioManager.Instance.instructor_ConfirmacionRescate);
-        UIManager.Instance.ShowWristObjective("¡Bien hecho! ¡Ahora llévala a la zona segura!");
+        UIManager.Instance.ShowChecklistStep("¡Bien hecho! ¡Ahora llévala a la zona segura!");
     }
 
     private void TryToDropNPC()

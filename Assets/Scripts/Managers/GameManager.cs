@@ -11,10 +11,12 @@ public class GameManager : Singleton<GameManager>
     public bool relojActivo = false;
 
     [Header("Referencias de UI")]
-    public GameObject panelDerrota; 
-    public TextMeshProUGUI textoReloj; 
+    public GameObject panelDerrota;
+    public TextMeshProUGUI textoPanelDerrota; // ¡AÑADE ESTO!
+    public GameObject panelVictoria;          // ¡AÑADE ESTO TAMBIÉN!
+    public TextMeshProUGUI textoReloj;
 
-  
+
 
     void Start()
     {
@@ -25,6 +27,7 @@ public class GameManager : Singleton<GameManager>
 
         ActualizarTextoReloj(tiempoRestante);
         relojActivo = false;
+        if (panelVictoria != null) panelVictoria.SetActive(false);
 
     }
 
@@ -46,54 +49,54 @@ public class GameManager : Singleton<GameManager>
         {
             // El tiempo llegó a 0
             tiempoRestante = 0;
-            relojActivo = false; // Lo apagamos
+            relojActivo = false; 
             ActualizarTextoReloj(tiempoRestante);
 
             // ¡Perdiste!
-            ActivarDerrota();
+            TriggerDerrota("¡SE ACABÓ EL TIEMPO!");
         }
     }
+    public void TriggerVictoria()
+    {
+        if (relojActivo == false) return; 
 
-    /// <summary>
-    /// Formatea el tiempo (float) a un string 00:00 y lo pone en el texto
-    /// </summary>
+        Debug.Log("¡JUEGO GANADO!");
+        PausarReloj();
+        if (panelVictoria != null)
+            panelVictoria.SetActive(true);
+
+        // Detenemos al jugador (PC o VR)
+        PauseManager.Instance.FreeCursorForUI();
+    }
+    
     void ActualizarTextoReloj(float tiempo)
     {
         if (textoReloj == null) return;
         textoReloj.text = GetFormattedTime();
     }
 
-    /// <summary>
-    /// Lógica que se ejecuta al perder
-    /// </summary>
-    void ActivarDerrota()
+    
+    public void TriggerDerrota(string motivo)
     {
-        Debug.LogWarning("¡TIEMPO AGOTADO! Has perdido.");
-        if (panelDerrota != null)
-        {
-            panelDerrota.SetActive(true);
-        }
+        if (relojActivo == false) return; 
 
-        // Opcional: Pausar todo el juego
-        // Time.timeScale = 0f; 
+        Debug.LogWarning($"¡JUEGO PERDIDO! Motivo: {motivo}");
+        PausarReloj();
+
+        if (panelDerrota != null)
+            panelDerrota.SetActive(true);
+
+        if (textoPanelDerrota != null)
+            textoPanelDerrota.text = motivo;
+
+        PauseManager.Instance.FreeCursorForUI();
     }
 
-
-    // --- MÉTODOS PÚBLICOS DE CONTROL ---
-
-    /// <summary>
-    /// Inicia o reanuda el conteo del reloj.
-    /// (Llama a esto desde otro script)
-    /// </summary>
     public void IniciarReloj()
     {
         relojActivo = true;
     }
 
-    /// <summary>
-    /// Pausa o detiene el conteo del reloj.
-    /// (Llama a esto desde otro script)
-    /// </summary>
     public void PausarReloj()
     {
         relojActivo = false;

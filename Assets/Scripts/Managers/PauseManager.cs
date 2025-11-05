@@ -1,6 +1,6 @@
 using UnityEngine;
-using System.Collections;
-using System; // ¡Importante! Para usar 'Action'
+using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class PauseManager : Singleton<PauseManager>
 {
@@ -8,44 +8,140 @@ public class PauseManager : Singleton<PauseManager>
     [SerializeField] private PlayerMovement playerMovement;
     [SerializeField] private MouseLook playerMouseLook;
 
-    // Función pública principal para iniciar una pausa
-    public void StartControlledPause(float duration, Action onPauseComplete)
+    [Header("Panel de Pausa (Arrastrar)")]
+    [SerializeField] private GameObject pauseMenuPanel;
+
+    private bool isPaused = false;
+
+    // --- ¡ARREGLO BUG 2! ---
+    // Esta variable "recuerda" si el reloj estaba corriendo
+    // antes de que pusiéramos pausa.
+    private bool wasClockActiveBeforePause = false;
+
+    protected override void Awake()
     {
-        StartCoroutine(PauseCoroutine(duration, onPauseComplete));
+        base.Awake();
+        if (pauseMenuPanel != null)
+            pauseMenuPanel.SetActive(false);
     }
 
-    private IEnumerator PauseCoroutine(float duration, Action onPauseComplete)
+    /// <summary>
+    /// Se llama desde el PlayerInput (P o botón de Menú)
+    /// </summary>
+    public void OnPause(InputAction.CallbackContext context)
     {
-        Debug.Log($"PAUSE MANAGER: Iniciando pausa de {duration} segundos.");
-
-        // 1. Desactivamos los controles
-        if (playerMovement != null) playerMovement.enabled = false;
-        if (playerMouseLook != null) playerMouseLook.DisableLook(); // Esto también libera el cursor
-
-        // 2. Esperamos el tiempo
-        yield return new WaitForSeconds(duration);
-
-        // 3. Reactivamos los controles
-        if (playerMovement != null) playerMovement.enabled = true;
-        if (playerMouseLook != null) playerMouseLook.EnableLook(); // Esto bloquea el cursor
-
-        Debug.Log("PAUSE MANAGER: Pausa terminada. Devolviendo el control.");
-
-        // 4. Avisamos al script que nos llamó (RescueManager) que ya hemos terminado
-        onPauseComplete?.Invoke();
+        if (context.performed)
+        {
+            TogglePause();
+        }
     }
 
-    // Función especial si solo queremos liberar el cursor (para los botones)
+    /// <summary>
+    /// La lógica central para pausar o reanudar
+    /// </summary>
+    private void TogglePause()
+    {
+        isPaused = !isPaused;
+
+        if (isPaused)
+        {
+            // --- PAUSAR EL JUEGO ---
+
+            // --- ¡ARREGLO BUG 1! ---
+            // Esta línea pausa TODOS los sonidos del juego.
+            AudioListener.pause = true;
+
+            // --- ¡ARREGLO BUG 2! ---
+            // 1. Guardamos el estado del reloj ANTES de pausarlo.
+            wasClockActiveBeforePause = GameManager.Instance.relojActivo;
+
+            Time.timeScale = 0f; // Congela la física
+            GameManager.Instance.PausarReloj(); // Pausa el cronómetro
+            FreeCursorForUI(); // Detiene el movimiento
+
+            if (pauseMenuPanel != null)
+                pauseMenuPanel.SetActive(true);
+        }
+        else
+        {
+            // --- REANUDAR EL JUEGO ---
+
+            // --- ¡ARREGLO BUG 1! ---
+            // Esta línea reanuda TODOS los sonidos del juego.
+            AudioListener.pause = false;
+
+            Time.timeScale = 1f; // Reanuda la física
+
+            // --- ¡ARREGLO BUG 2! ---
+            // 2. Solo reanudamos el reloj SI ESTABA CORRIENDO ANTES.
+            if (wasClockActiveBeforePause)
+            {
+                GameManager.Instance.IniciarReloj();
+            }
+
+            RegainControlFromUI(); // Devuelve el control
+
+            if (pauseMenuPanel != null)
+                pauseMenuPanel.SetActive(false);
+        }
+    }
+
+    // --- Funciones para tus 3 Botones de UI (Sin cambios) ---
+
+    public void Continuar()
+    {
+        if (isPaused)
+        {
+            TogglePause();
+        }
+    }
+
+    public void Reiniciar()
+    {
+        Time.timeScale = 1f;
+        AudioListener.pause = false; // ¡Importante! Asegurarse de reanudar el audio
+
+        // --- ¡ARREGLO DEL BUG DE VOZ PERSISTENTE! ---
+        // Le decimos al AudioManager que pare todos los sonidos ANTES de recargar.
+        // (Asegúrate de tener una función "StopAllSounds" en tu AudioManager.Instance)
+        if (AudioManager.Instance != null)
+        {
+            // O como se llame tu función para parar los audios: StopVoices(), StopAll(), etc.
+            AudioManager.Instance.StopAllSounds();
+        }
+
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    public void SalirAlMenu()
+    {
+        Time.timeScale = 1f;
+        AudioListener.pause = false; // ¡Importante! Asegurarse de reanudar el audio
+
+        // --- ¡ARREGLO DEL BUG DE VOZ PERSISTENTE! ---
+        // Le decimos al AudioManager que pare todos los sonidos ANTES de salir al menú.
+        // (Asegúrate de tener una función "StopAllSounds" en tu AudioManager.Instance)
+        if (AudioManager.Instance != null)
+        {
+            // O como se llame tu función para parar los audios: StopVoices(), StopAll(), etc.
+            AudioManager.Instance.StopAllSounds();
+        }
+
+        SceneManager.LoadScene("Menu_"); // (Asegúrate de que tu escena se llame así)
+    }
+
+
+    // --- Tus funciones originales (Sin cambios) ---
     public void FreeCursorForUI()
     {
         if (playerMovement != null) playerMovement.enabled = false;
         if (playerMouseLook != null) playerMouseLook.DisableLook();
     }
 
-    // Función especial para devolver el control (después de los botones)
     public void RegainControlFromUI()
     {
         if (playerMovement != null) playerMovement.enabled = true;
         if (playerMouseLook != null) playerMouseLook.EnableLook();
     }
 }
+

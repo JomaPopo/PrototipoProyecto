@@ -19,6 +19,7 @@ public class AudioManager : SingletonPersistent<AudioManager>
     [Header("Efectos de Sonido (SFX)")]
     public AudioClip buttonClickSound;
     public AudioClip radioSquelchSound;
+    public AudioClip timbreDeLlamada;
 
     [Header("Voces del Jugador")]
     public AudioClip playerCheckingConsciousness; 
@@ -34,6 +35,7 @@ public class AudioManager : SingletonPersistent<AudioManager>
     public AudioClip instructor_LlamarRadio;
     public AudioClip instructor_AbrirViasAereas;
     public AudioClip instructor_FeedbackIncorrectoViasAereas;
+
 
     [Header("Voz de la Central")]
     public AudioClip dispatcherResponseVoice;
@@ -122,5 +124,28 @@ public class AudioManager : SingletonPersistent<AudioManager>
         volume = Mathf.Clamp(volume, 0.0001f, 1f);
         myMixer.SetFloat("Sfx", Mathf.Log10(volume) * 20);
         audioSettings.sfxVolume = volume;
+    }
+    public void StopAllSounds()
+    {
+        Debug.Log("AudioManager: Deteniendo todos los sonidos.");
+
+        // Detiene la música (si existe y está sonando)
+        //if (musicSource != null && musicSource.isPlaying)
+        //{
+        //    musicSource.Stop();
+        //}
+
+        // Detiene los efectos de sonido
+        if (sfxSource != null && sfxSource.isPlaying)
+        {
+            sfxSource.Stop();
+        }
+
+        // ¡Esta es la más importante para tu bug!
+        // Detiene las voces
+        if (voiceSource != null && voiceSource.isPlaying)
+        {
+            voiceSource.Stop();
+        }
     }
 }
