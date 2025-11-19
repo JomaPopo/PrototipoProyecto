@@ -1,39 +1,45 @@
 using UnityEngine;
 using TMPro;
-using Assets.Scripts.GameEvents;
+using Assets.Scripts.GameEvents; // Puedes borrar esta línea si ya no usas GameEvents
 
 public class QuizManager : MonoBehaviour
 {
     public GameObject[] panels;
     public TMP_Text resultText;
 
-    [Header("Control de Movimiento")]
-    public MonoBehaviour playerMovementScript;
-    public MonoBehaviour cameraLookScript;
+    // ¡ELIMINADO! Ya no necesitamos esto, el PauseManager lo maneja.
+    // [Header("Control de Movimiento")]
+    // public MonoBehaviour playerMovementScript;
+    // public MonoBehaviour cameraLookScript;
 
-    [Header("Evento al finalizar completamente el quiz")]
-    public GameEvent quizFinishedEvent;
+    // ¡ELIMINADO! Ya no usamos esto, llamaremos a GameManager.
+    // [Header("Evento al finalizar completamente el quiz")]
+    // public GameEvent quizFinishedEvent;
 
     private int currentIndex = 0;
     private int correctCount = 0;
     private int wrongCount = 0;
 
-    void Start()
+    // ¡El CPRManager llamará a esta función!
+    public void StartQuiz()
     {
-        if (playerMovementScript != null)
-            playerMovementScript.enabled = false;
+        // ¡ELIMINADO! El jugador YA está detenido.
+        // if (playerMovementScript != null) ...
+        // if (cameraLookScript != null) ...
 
-        if (cameraLookScript != null)
-            cameraLookScript.enabled = false;
+        currentIndex = 0;
+        correctCount = 0;
+        wrongCount = 0;
 
         for (int i = 0; i < panels.Length; i++)
             panels[i].SetActive(false);
 
         if (panels.Length > 0)
-            panels[0].SetActive(true);
+            panels[0].SetActive(true); // Mostramos el primer panel (Intro o Pregunta 1)
 
-        Cursor.lockState = CursorLockMode.None;
-       Cursor.visible = true;
+        // ¡ELIMINADO! El cursor YA está libre.
+        // Cursor.lockState = CursorLockMode.None;
+        // Cursor.visible = true;
     }
 
     public void OnContinue()
@@ -72,41 +78,37 @@ public class QuizManager : MonoBehaviour
     private void ShowResultsPanel()
     {
         int lastPanel = panels.Length - 1;
-
-        // Aseguramos que no se pase el índice
         if (lastPanel >= 0)
             panels[lastPanel].SetActive(true);
 
         resultText.text = $"Respuestas correctas: {correctCount}\nRespuestas incorrectas: {wrongCount}";
     }
 
+    /// <summary>
+    /// Esta función debe ser llamada por el botón "Continuar" o "Finalizar"
+    /// del ÚLTIMO panel (el de resultados).
+    /// </summary>
     public void HidePanel(GameObject panel)
     {
         panel.SetActive(false);
 
-        if (playerMovementScript != null)
-            playerMovementScript.enabled = true;
+        // ¡ELIMINADO! No devolvemos el control aquí.
+        // if (playerMovementScript != null) ...
+        // if (cameraLookScript != null) ...
+        // Cursor.lockState = CursorLockMode.Locked;
+        // Cursor.visible = false;
 
-        if (cameraLookScript != null)
-            cameraLookScript.enabled = true;
+        // ¡ELIMINADO!
+        // if (quizFinishedEvent != null) ...
 
-       Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-
-        if (quizFinishedEvent != null)
-            quizFinishedEvent.Raise();
-    }
-    public int GetCorrectCountForTest()
-    {
-        return correctCount;
+        // --- ¡NUEVA LÓGICA! ---
+        // ¡Si el jugador terminó el quiz, GANÓ EL JUEGO!
+        // (Asumimos que solo los ganadores toman el quiz)
+        GameManager.Instance.TriggerVictoria();
     }
 
-    public int GetWrongCountForTest()
-    {
-        return wrongCount;
-    }
-    public int GetCurrentIndexForTest()
-    {
-        return currentIndex;
-    }
+    // --- (Tus funciones de Test no cambian) ---
+    public int GetCorrectCountForTest() { return correctCount; }
+    public int GetWrongCountForTest() { return wrongCount; }
+    public int GetCurrentIndexForTest() { return currentIndex; }
 }

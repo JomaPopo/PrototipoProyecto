@@ -227,7 +227,11 @@ public class PlayerInteraction : MonoBehaviour
         npcToCarry.transform.localPosition = Vector3.zero;
         npcToCarry.transform.localRotation = Quaternion.identity;
         AudioManager.Instance.PlayVoice(AudioManager.Instance.instructor_ConfirmacionRescate);
-        UIManager.Instance.ShowChecklistStep("¡Bien hecho! ¡Ahora llévala a la zona segura!");
+string contexto = "CONTEXTO: ¡Tienes a la víctima!";
+    string instruccion = "¡Bien hecho! ¡Ahora lléala a la zona segura (la toalla roja)!";
+    
+    UIManager.Instance.ShowWristContext(contexto);
+        UIManager.Instance.ShowWristInstruction_Instant(instruccion);
     }
 
     private void TryToDropNPC()

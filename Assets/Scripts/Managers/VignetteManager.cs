@@ -95,4 +95,62 @@ public class VignetteManager : Singleton<VignetteManager>
         vignette.active = false;
         activeVignetteCoroutine = null;
     }
+    public void TriggerPulse(Color color, float intensity = 0.45f, float duration = 0.2f)
+    {
+        if (vignette == null) return;
+        if (activeVignetteCoroutine != null) StopCoroutine(activeVignetteCoroutine);
+
+        activeVignetteCoroutine = StartCoroutine(PulseRoutine(duration,color, intensity));
+    }
+
+    private IEnumerator PulseRoutine(float duration, Color color, float intensity)
+    {
+        // 1. Configurar
+        vignette.color.Override(color);
+        vignette.intensity.Override(intensity);
+        vignette.active = true;
+
+        // 2. Esperar
+        yield return new WaitForSeconds(duration);
+
+        // 3. Apagar
+        vignette.active = false;
+        activeVignetteCoroutine = null;
+    }
+
+    /// <summary>
+    /// Mantiene la viñeta encendida (ideal para feedback de error continuo).
+    /// </summary>
+    public void SetContinuousFeedback(Color color)
+    {
+        if (vignette == null) return;
+        if (activeVignetteCoroutine != null) StopCoroutine(activeVignetteCoroutine);
+
+        vignette.color.Override(color);
+        vignette.intensity.Override(0.5f); // Un poco más intenso para errores
+        vignette.active = true;
+    }
+    public void SetCPRFeedback(Color color)
+    {
+        if (vignette == null) return;
+
+        // Si había un flash ocurriendo, lo detenemos para que no interfiera
+        if (activeVignetteCoroutine != null) StopCoroutine(activeVignetteCoroutine);
+
+        vignette.color.Override(color);
+        vignette.intensity.Override(0.45f); // Intensidad fija (ajusta a tu gusto, 0.45 es visible pero no ciega)
+        vignette.active = true;
+    }
+
+    /// <summary>
+    /// Apaga la viñeta completamente.
+    /// </summary>
+    public void ResetVignette()
+    {
+        if (vignette == null) return;
+
+        if (activeVignetteCoroutine != null) StopCoroutine(activeVignetteCoroutine);
+
+        vignette.active = false;
+    }
 }

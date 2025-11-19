@@ -14,7 +14,12 @@ public class UIManager : Singleton<UIManager>
     [Header("Panel de Pausa con Confirmación")]
     [SerializeField] private GameObject pauseInstructionPanel;
     [SerializeField] private TextMeshProUGUI panelInstructionText;
-    [SerializeField] private Button panelOkButton; // ¡NUEVO! Referencia al botón "Ok"
+    [SerializeField] private Button panelOkButton; 
+
+    [Header("UI del Checklist")]
+    [Tooltip("Arrastra aquí los 4 Toggles del checklist en orden")]
+    public Toggle[] checklistSteps;
+    [SerializeField] private GameObject checklistPanel;
 
     [Header("Otros Elementos (Opcional)")]
     [SerializeField] private GameObject crosshair;
@@ -26,18 +31,39 @@ public class UIManager : Singleton<UIManager>
     [Header("UI de Muñeca (VR)")]
     [SerializeField] private GameObject wristCommunicatorCanvas;
     [SerializeField] private TextMeshProUGUI wristText;
-    [SerializeField] private TextMeshProUGUI wristChecklistText;
     [SerializeField] private TextMeshProUGUI wristTimerText;
-
+    [SerializeField] private TextMeshProUGUI wristContextText; // ¡Para el CONTEXTO!
+    
     protected override void Awake()
     {
         base.Awake();
         if (instructionText != null) instructionText.gameObject.SetActive(false);
         if (pauseInstructionPanel != null) pauseInstructionPanel.SetActive(false);
         if (crosshair != null) crosshair.SetActive(true);
+        if (wristContextText != null) wristContextText.gameObject.SetActive(false);
+        if (checklistPanel != null) checklistPanel.SetActive(false);
     }
 
-    // --- Sistema de Tipeo (Feedback rápido) ---
+    public void CompleteChecklistStep(int stepIndex)
+    {
+        if (checklistSteps != null && stepIndex < checklistSteps.Length)
+        {
+            // ¡Aquí es donde se marca el check!
+            checklistSteps[stepIndex].isOn = true;
+        }
+    }
+    public void ShowWristContext(string message)
+    {
+        // Asegura que el panel padre esté activo
+        if (wristCommunicatorCanvas != null)
+            wristCommunicatorCanvas.SetActive(true);
+
+        if (wristContextText != null)
+        {
+            wristContextText.text = message;
+            wristContextText.gameObject.SetActive(true);
+        }
+    }
     public void ShowInstruction(string message)
     {
         HidePausePanel();
@@ -47,7 +73,6 @@ public class UIManager : Singleton<UIManager>
             typingCoroutine = StartCoroutine(TypeText(instructionText, message, null)); // No necesita botón Ok
         }
     }
-
     public void HideInstructions()
     {
         if (typingCoroutine != null) StopCoroutine(typingCoroutine);
@@ -137,44 +162,49 @@ public class UIManager : Singleton<UIManager>
         if (wristTimerText != null)
             wristTimerText.text = timerMessage;
 
-        if (wristChecklistText != null)
-            wristChecklistText.gameObject.SetActive(false);
     }
-    public void ShowChecklistStep(string instructionMessage, string checklistMessage, Action onTypingFinished)
+    public void ShowWristInstruction_Instant(string instructionMessage)
     {
-        // 1. Pone el CHECKLIST "de frente" (como ya lo tenías)
-        if (wristChecklistText != null)
-        {
-            wristChecklistText.gameObject.SetActive(true);
-            wristChecklistText.text = checklistMessage;
-        }
+        if (wristCommunicatorCanvas != null)
+            wristCommunicatorCanvas.SetActive(true);
 
-        // 2. Pone la INSTRUCCIÓN DETALLADA usando tu tipeo
+        if (wristText != null)
+        {
+            // ¡Detiene cualquier tipeo anterior!
+            StopAllTypingCoroutines();
+
+            // ¡Pone el texto de frente!
+            wristText.text = instructionMessage;
+            wristText.gameObject.SetActive(true);
+        }
+    }
+    public void ShowWristInstruction(string instructionMessage, Action onTypingFinished = null)
+    {
+        if (wristCommunicatorCanvas != null)
+            wristCommunicatorCanvas.SetActive(true);
+
         if (wristText != null)
         {
             StopAllTypingCoroutines();
-
-            // ¡LE PASAMOS LA FUNCIÓN DE "AVISO"!
             typingCoroutine = StartCoroutine(TypeText(wristText, instructionMessage, null, onTypingFinished));
         }
     }
-    public void ShowChecklistStep(string instructionMessage, string checklistMessage)
-    {
-        if (wristChecklistText != null)
-        {
-            wristChecklistText.gameObject.SetActive(true);
-            wristChecklistText.text = checklistMessage;
-        }
 
-        if (wristText != null)
-        {
-            StopAllTypingCoroutines();
-            typingCoroutine = StartCoroutine(TypeText(wristText, instructionMessage, null));
-        }
-    }
-    public void ShowChecklistStep(string message)
+    public void HideWristContext()
     {
-        if (wristText != null)
-            wristText.text = message;
+        if (wristContextText != null)
+            wristContextText.gameObject.SetActive(false);
     }
+    public void ShowChecklistPanel()
+    {
+        if (checklistPanel != null)
+            checklistPanel.SetActive(true);
+    }
+
+  
+
+  
+   
+
+
 }

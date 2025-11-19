@@ -5,8 +5,8 @@ using UnityEngine.SceneManagement;
 public class PauseManager : Singleton<PauseManager>
 {
     [Header("Referencias del Jugador (Arrastrar)")]
-    [SerializeField] private PlayerMovement playerMovement;
-    [SerializeField] private MouseLook playerMouseLook;
+   // [SerializeField] private PlayerMovement playerMovement;
+   // [SerializeField] private MouseLook playerMouseLook;
 
     [Header("Panel de Pausa (Arrastrar)")]
     [SerializeField] private GameObject pauseMenuPanel;
@@ -57,7 +57,6 @@ public class PauseManager : Singleton<PauseManager>
 
             Time.timeScale = 0f; // Congela la física
             GameManager.Instance.PausarReloj(); // Pausa el cronómetro
-            FreeCursorForUI(); // Detiene el movimiento
 
             if (pauseMenuPanel != null)
                 pauseMenuPanel.SetActive(true);
@@ -79,7 +78,6 @@ public class PauseManager : Singleton<PauseManager>
                 GameManager.Instance.IniciarReloj();
             }
 
-            RegainControlFromUI(); // Devuelve el control
 
             if (pauseMenuPanel != null)
                 pauseMenuPanel.SetActive(false);
@@ -131,17 +129,6 @@ public class PauseManager : Singleton<PauseManager>
     }
 
 
-    // --- Tus funciones originales (Sin cambios) ---
-    public void FreeCursorForUI()
-    {
-        if (playerMovement != null) playerMovement.enabled = false;
-        if (playerMouseLook != null) playerMouseLook.DisableLook();
-    }
-
-    public void RegainControlFromUI()
-    {
-        if (playerMovement != null) playerMovement.enabled = true;
-        if (playerMouseLook != null) playerMouseLook.EnableLook();
-    }
+  
 }
 

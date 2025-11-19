@@ -1,9 +1,8 @@
 using UnityEngine;
-using UnityEngine.UI;  // Para el componente 'Image'
-using DG.Tweening;     // Para las animaciones de DOTween
-using TMPro;           // Para TextMeshPro
+using UnityEngine.UI;  
+using DG.Tweening;     
+using TMPro;          
 using System.Collections;
-// (No necesitamos 'List' o 'Linq' para esta versión)
 
 public class NPCController : MonoBehaviour
 {
@@ -30,7 +29,7 @@ public class NPCController : MonoBehaviour
     private Transform currentWaypoint;
 
     private Rigidbody rb;
-    public Animator animator; // Variable para el Animator
+    public Animator animator; 
     public GameObject cuerpoNPC;
 
     [Header("Material a Cambiar")]
@@ -38,24 +37,19 @@ public class NPCController : MonoBehaviour
     public SkinnedMeshRenderer meshRenderer;
     private Material materialOriginal;
 
-    // --- ¡ESTA ES LA LÓGICA ANTIGUA QUE QUERÍAS! ---
     [Header("Botones de Interacción")]
     public GameObject hombrosButton;
     public GameObject frenteButton;
     public GameObject mentonButton;
-    // (Añade aquí tus otros botones como 'pieButton' si los necesitas)
 
-    // Variables privadas para guardar los "tweens" (animaciones)
     private Tween hombrosTween;
     private Tween frenteTween;
     private Tween mentonTween;
 
-    // Variables para guardar las Imágenes (para el fade)
     private Image hombrosImage;
     private Image frenteImage;
     private Image mentonImage;
-
-    // (Quitamos el 'playerCameraTransform' porque esta versión no lo usa)
+    public GameObject waterSpitParticles;
 
     void Awake()
     {
@@ -78,7 +72,6 @@ public class NPCController : MonoBehaviour
         if (meshRenderer.materials.Length > 1)
             materialOriginal = meshRenderer.materials[1];
 
-        // --- ¡LÓGICA DE AWAKE ANTIGUA! ---
         if (hombrosButton != null) hombrosImage = hombrosButton.GetComponentInChildren<Image>();
         if (frenteButton != null) frenteImage = frenteButton.GetComponentInChildren<Image>();
         if (mentonButton != null) mentonImage = mentonButton.GetComponentInChildren<Image>();
@@ -221,22 +214,14 @@ public class NPCController : MonoBehaviour
         meshRenderer.materials = materialesActuales;
     }
 
-    // =================================================================
-    // --- ¡FUNCIONES DE INTERACCIÓN REVERTIDAS (SIMPLES)! ---
-    // =================================================================
-
-    /// <summary>
-    /// (VERSIÓN SIMPLE) Activa un botón y lo hace brillar (solo la imagen).
-    /// </summary>
+   
     public void ActivateInteraction(BodyPart part, bool shouldGlow)
     {
-        // 1. Encendemos el canvas general si no lo está
         if (interactionCanvas != null && !interactionCanvas.activeSelf)
         {
             interactionCanvas.SetActive(true);
         }
 
-        // 2. Usamos un Switch para manejar cada parte del cuerpo
         switch (part)
         {
             case BodyPart.Hombros:
@@ -284,22 +269,17 @@ public class NPCController : MonoBehaviour
                 }
                 break;
 
-                // (Si necesitas añadir 'Pies', 'Manos', etc.,
-                // tendrías que añadir un nuevo 'case' aquí manualmente)
         }
     }
 
-    /// <summary>
-    /// (VERSIÓN SIMPLE) Desactiva un botón y detiene su brillo.
-    /// </summary>
     public void DeactivateInteraction(BodyPart part)
     {
         switch (part)
         {
             case BodyPart.Hombros:
-                hombrosTween?.Kill(); // Detiene la animación
-                if (hombrosImage != null) hombrosImage.color = Color.white; // Resetea la opacidad
-                if (hombrosButton != null) hombrosButton.SetActive(false); // Oculta el botón
+                hombrosTween?.Kill(); 
+                if (hombrosImage != null) hombrosImage.color = Color.white; 
+                if (hombrosButton != null) hombrosButton.SetActive(false); 
                 break;
 
             case BodyPart.Frente:
@@ -315,23 +295,30 @@ public class NPCController : MonoBehaviour
                 break;
         }
     }
+    public void OnRevived()
+    {
+        Debug.Log("¡La víctima ha revivido!");
 
-    /// <summary>
-    /// (VERSIÓN SIMPLE) Desactiva TODOS los botones.
-    /// </summary>
+        CambiarAlMaterialOriginal();
+
+        if (waterSpitParticles != null)
+        {
+            waterSpitParticles.SetActive(true);
+            
+         
+        }
+
+    }
     public void DeactivateAllInteractions()
     {
-        // Detenemos todas las animaciones
         hombrosTween?.Kill();
         frenteTween?.Kill();
         mentonTween?.Kill();
 
-        // Reseteamos el color de todas las imágenes
         if (hombrosImage != null) hombrosImage.color = Color.white;
         if (frenteImage != null) frenteImage.color = Color.white;
         if (mentonImage != null) mentonImage.color = Color.white;
 
-        // Ocultamos todos los botones
         if (hombrosButton != null) hombrosButton.SetActive(false);
         if (frenteButton != null) frenteButton.SetActive(false);
         if (mentonButton != null) mentonButton.SetActive(false);

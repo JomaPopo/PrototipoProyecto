@@ -1,4 +1,4 @@
-using UnityEngine;
+Ôªøusing UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
@@ -6,17 +6,12 @@ using UnityEngine.InputSystem;
 
 public class CPRManager : MonoBehaviour
 {
-    [Header("ConfiguraciÛn del Ritmo")]
-    [Tooltip("Cu·nto 'sube' la barra con cada pulsaciÛn correcta.")]
+    [Header("Configuraci√≥n del Ritmo")]
     [SerializeField] private float rhythmIncreaseAmount = 5f;
-    [Tooltip("Cu·nto 'baja' la barra por segundo si no se presiona nada.")]
     [SerializeField] private float rhythmDecayRate = 15f;
-    [Tooltip("El valor mÌnimo del rango perfecto.")]
     [SerializeField] private float targetZoneMin = 100f;
-    [Tooltip("El valor m·ximo del rango perfecto.")]
     [SerializeField] private float targetZoneMax = 120f;
     [SerializeField] private float riseSmoothness = 10f;
-
 
     [Header("Referencias de UI")]
     [SerializeField] private GameObject cprPanel;
@@ -25,67 +20,98 @@ public class CPRManager : MonoBehaviour
     [SerializeField] private Slider qualityBar;
     [SerializeField] private Slider rhythmSlider;
 
-    [Header("Referencias del Jugador")]
-   // [SerializeField] private PlayerMovement playerMovement;
-    //[SerializeField] private MouseLook mouseLook;
+    [Header("Referencias del Cuestionario")]
+    [SerializeField] private QuizManager quizManager;
+    [SerializeField] private GameObject quizPanelGameObject;
 
-    // --- Variables de control ---
+    
+
+    [Header("Feedback Visual (Manos 3D)")]
+    [Tooltip("Arrastra el GameObject de las manos que est√°n sobre el pecho")]
+    [SerializeField] private GameObject handsModel;
+    [Tooltip("Qu√© tanto bajan las manos (0.05 = 5cm en escala real)")]
+    [SerializeField] private float compressionDepth = 0.05f;
+    [SerializeField] private float handAnimationSpeed = 15f;
+
+    private Vector3 handsInitialPos;
+    private Vector3 handsPressedPos;
+
     private int compressionCount = 0;
     private float totalQualityScore = 0;
-    private float currentRhythmValue = 0f; 
-    private float targetRhythmValue = 0f;  
+    private float currentRhythmValue = 0f;
+    private float targetRhythmValue = 0f;
     private bool canPress = true;
     [SerializeField] private float minQualityToWin = 70f;
 
     private bool isLeftHandDown = false;
     private bool isRightHandDown = false;
+    public NPCController currentVictim;
+
+    void Awake()
+    {
+        
+
+        if (handsModel != null)
+        {
+            handsInitialPos = handsModel.transform.localPosition;
+            handsPressedPos = handsInitialPos - new Vector3(0, compressionDepth, 0);
+            handsModel.SetActive(false); // Ocultas al principio
+        }
+    }
 
     public void StartCPR()
     {
         cprPanel.SetActive(true);
+
+        if (handsModel != null) handsModel.SetActive(true);
+
         compressionCount = 0;
         totalQualityScore = 0;
 
         rhythmSlider.minValue = 80;
         rhythmSlider.maxValue = 140;
 
-        // --- °AQUÕ EST¡ EL CAMBIO! ---
-        // Calculamos el punto medio de la zona objetivo para empezar ahÌ.
-        float startingRhythmValue = (targetZoneMin + targetZoneMax) / 2f; // Ej: (100 + 120) / 2 = 110
-
-        // Inicializamos ambos valores en el punto medio.
+        float startingRhythmValue = (targetZoneMin + targetZoneMax) / 2f;
         targetRhythmValue = startingRhythmValue;
         currentRhythmValue = startingRhythmValue;
 
         UpdateUI();
         feedbackText.gameObject.SetActive(false);
-
-        //if (playerMovement != null) playerMovement.enabled = false;
-        // if (mouseLook != null) mouseLook.DisableLook();
-
-        PauseManager.Instance.FreeCursorForUI();
     }
 
     void Update()
     {
-        // 1. Aplicamos el decaimiento al valor REAL (target).
         if (targetRhythmValue > rhythmSlider.minValue)
         {
             targetRhythmValue -= rhythmDecayRate * Time.deltaTime;
         }
         targetRhythmValue = Mathf.Max(targetRhythmValue, rhythmSlider.minValue);
-
-        // 2. El valor VISUAL (current) persigue suavemente al valor REAL. °AQUÕ EST¡ LA MAGIA!
         currentRhythmValue = Mathf.Lerp(currentRhythmValue, targetRhythmValue, Time.deltaTime * riseSmoothness);
-
-        // 3. Actualizamos la barra con el valor visual suavizado.
         rhythmSlider.value = currentRhythmValue;
 
-        // 4. La lÛgica del juego usa el valor REAL para ser precisa.
         CheckRhythmQuality();
+
+        AnimateHands();
     }
 
-    // --- MANEJO DE INPUTS ---
+    private void AnimateHands()
+    {
+        if (handsModel == null) return;
+
+        Vector3 targetPos;
+
+        if (canPress == false)
+        {
+            targetPos = handsPressedPos;
+        }
+        else
+        {
+            targetPos = handsInitialPos;
+        }
+
+        handsModel.transform.localPosition = Vector3.Lerp(handsModel.transform.localPosition, targetPos, Time.deltaTime * handAnimationSpeed);
+    }
+
     public void OnCPRLeft(InputAction.CallbackContext context)
     {
         if (context.performed) isLeftHandDown = true;
@@ -108,7 +134,6 @@ public class CPRManager : MonoBehaviour
         {
             canPress = false;
 
-            // "Bombeamos" el valor REAL (target).
             targetRhythmValue += rhythmIncreaseAmount;
             targetRhythmValue = Mathf.Min(targetRhythmValue, rhythmSlider.maxValue);
 
@@ -121,51 +146,84 @@ public class CPRManager : MonoBehaviour
         }
         else if (!bothHandsPressed)
         {
-            canPress = true;
+            canPress = true; 
         }
     }
 
-    // --- L”GICA DE CALIDAD (Usa el valor real para precisiÛn) ---
     private void CheckRhythmQuality()
     {
-        // Usamos targetRhythmValue para que el feedback sea instant·neo y preciso.
         if (targetRhythmValue >= targetZoneMin && targetRhythmValue <= targetZoneMax)
         {
             totalQualityScore += Time.deltaTime * 5;
-            ShowFeedback("°RITMO PERFECTO!", Color.green);
+            ShowFeedback("¬°RITMO PERFECTO!", Color.green);
+            VignetteManager.Instance.TriggerPulse(Color.green, 0.3f, 0.15f);
         }
         else if (targetRhythmValue < targetZoneMin)
         {
-            ShowFeedback("°M¡S R¡PIDO!", Color.yellow);
+            ShowFeedback("¬°M√ÅS R√ÅPIDO!", Color.yellow);
+            VignetteManager.Instance.SetContinuousFeedback(Color.yellow);
         }
         else
         {
-            ShowFeedback("°MUY R¡PIDO!", Color.red);
+            ShowFeedback("¬°MUY R√ÅPIDO!", Color.red);
+            VignetteManager.Instance.SetContinuousFeedback(Color.red);
         }
     }
 
-    // --- FUNCIONES DE UI Y FIN ---
     private void EndCPRSequence()
     {
         cprPanel.SetActive(false);
-        
-        PauseManager.Instance.RegainControlFromUI();
+
+        if (handsModel != null) handsModel.SetActive(false);
+
+        VignetteManager.Instance.ResetVignette();
         this.enabled = false;
+
         if (totalQualityScore >= minQualityToWin)
         {
-            // °GANASTE!
-            // Le decimos al GameManager que muestre la pantalla de victoria
-            GameManager.Instance.TriggerVictoria();
+            
+
+            StartCoroutine(ReviveSequenceRoutine());
         }
         else
         {
-            // °PERDISTE!
-            // Le decimos al GameManager que muestre la pantalla de derrota
-            string motivo = $"Calidad de RCP muy baja ({totalQualityScore:F0}%). La vÌctima no sobreviviÛ.";
+            string motivo = $"Calidad de RCP muy baja ({totalQualityScore:F0}%). La v√≠ctima no sobrevivi√≥.";
             GameManager.Instance.TriggerDerrota(motivo);
         }
     }
+    private IEnumerator ReviveSequenceRoutine()
+    {
+        Debug.Log("RCP Exitoso. Iniciando secuencia de recuperaci√≥n...");
 
+        GameManager.Instance.PausarReloj();
+
+        if (currentVictim != null)
+        {
+            currentVictim.OnRevived();
+        }
+
+        string contexto = "CONTEXTO: ¬°Est√° reaccionando! Est√° expulsando agua.";
+        string instruccion = "Observa a la v√≠ctima.";
+        UIManager.Instance.ShowWristContext(contexto);
+        UIManager.Instance.ShowWristInstruction_Instant(instruccion);
+
+        yield return new WaitForSeconds(5.0f);
+
+        Debug.Log("Secuencia terminada. Pasando al Quiz.");
+
+        string instruccionFinal = "¬°Buen trabajo! Has salvado una vida. Ahora completa este cuestionario.";
+        string contextoFinal = "CONTEXTO: El paciente est√° estable.";
+
+        UIManager.Instance.ShowWristContext(contextoFinal);
+        UIManager.Instance.ShowWristInstruction(instruccionFinal);
+        UIManager.Instance.CompleteChecklistStep(3); 
+
+        if (quizPanelGameObject != null)
+            quizPanelGameObject.SetActive(true);
+
+        if (quizManager != null)
+            quizManager.StartQuiz();
+    }
     private void UpdateUI()
     {
         compressionCountText.text = $"{compressionCount} / 100";

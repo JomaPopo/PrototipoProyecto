@@ -66,7 +66,7 @@ public class GameManager : Singleton<GameManager>
             panelVictoria.SetActive(true);
 
         // Detenemos al jugador (PC o VR)
-        PauseManager.Instance.FreeCursorForUI();
+       // PauseManager.Instance.FreeCursorForUI();
     }
     
     void ActualizarTextoReloj(float tiempo)
@@ -89,7 +89,7 @@ public class GameManager : Singleton<GameManager>
         if (textoPanelDerrota != null)
             textoPanelDerrota.text = motivo;
 
-        PauseManager.Instance.FreeCursorForUI();
+       // PauseManager.Instance.FreeCursorForUI();
     }
 
     public void IniciarReloj()

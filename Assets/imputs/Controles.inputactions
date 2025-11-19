@@ -268,7 +268,7 @@
                 {
                     "name": "",
                     "id": "410bf351-9b61-4c87-9ec6-42e1e25819fa",
-                    "path": "",
+                    "path": "<XRController>{LeftHand}/triggerButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -280,6 +280,17 @@
                     "name": "",
                     "id": "fbc8afe9-2f75-4fc0-8c4b-ae0d49420451",
                     "path": "<Keyboard>/r",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "CPR_Derecha",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "f2207896-ada7-45bd-afc1-bb86d051b9e4",
+                    "path": "<XRController>{RightHand}/triggerButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
