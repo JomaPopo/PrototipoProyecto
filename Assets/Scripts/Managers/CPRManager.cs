@@ -175,7 +175,10 @@ public class CPRManager : MonoBehaviour
         cprPanel.SetActive(false);
 
         if (handsModel != null) handsModel.SetActive(false);
-
+        if (CrowdManager.Instance != null)
+        {
+            CrowdManager.Instance.DeactivateCrowd();
+        }
         VignetteManager.Instance.ResetVignette();
         this.enabled = false;
 

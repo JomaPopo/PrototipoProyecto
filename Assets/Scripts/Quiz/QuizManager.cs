@@ -7,14 +7,7 @@ public class QuizManager : MonoBehaviour
     public GameObject[] panels;
     public TMP_Text resultText;
 
-    // ¡ELIMINADO! Ya no necesitamos esto, el PauseManager lo maneja.
-    // [Header("Control de Movimiento")]
-    // public MonoBehaviour playerMovementScript;
-    // public MonoBehaviour cameraLookScript;
-
-    // ¡ELIMINADO! Ya no usamos esto, llamaremos a GameManager.
-    // [Header("Evento al finalizar completamente el quiz")]
-    // public GameEvent quizFinishedEvent;
+    
 
     private int currentIndex = 0;
     private int correctCount = 0;
@@ -92,18 +85,12 @@ public class QuizManager : MonoBehaviour
     {
         panel.SetActive(false);
 
-        // ¡ELIMINADO! No devolvemos el control aquí.
-        // if (playerMovementScript != null) ...
-        // if (cameraLookScript != null) ...
-        // Cursor.lockState = CursorLockMode.Locked;
-        // Cursor.visible = false;
+        string contextoFinal = "CONTEXTO: Cuestionario completado. ¡Eres un salvavidas certificado!";
+        string instruccionFinal = "Puedes explorar la carpa médica para aprender más, o presionar el boton de [Menú] y 'Salir' para terminar.";
 
-        // ¡ELIMINADO!
-        // if (quizFinishedEvent != null) ...
-
-        // --- ¡NUEVA LÓGICA! ---
-        // ¡Si el jugador terminó el quiz, GANÓ EL JUEGO!
-        // (Asumimos que solo los ganadores toman el quiz)
+        // Asumiendo que UIManager tiene las funciones correctas (Contexto + Instrucción)
+        UIManager.Instance.ShowWristContext(contextoFinal);
+        UIManager.Instance.ShowWristInstruction_Instant(instruccionFinal);
         GameManager.Instance.TriggerVictoria();
     }
 

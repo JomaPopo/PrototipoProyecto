@@ -2,7 +2,7 @@
 using System.Collections;
 using UnityEngine.InputSystem.Haptics;
 using System;
-using Mono.Cecil.Cil;
+
 public enum BodyPart { Hombros, Cabeza, Pecho, Manos, Pies, Rodilla, Frente, Menton }
 public class RescueManager : Singleton<RescueManager>
 {
@@ -104,7 +104,10 @@ public class RescueManager : Singleton<RescueManager>
             case RescueState.VictimRescued:
 
                 UIManager.Instance.ShowChecklistPanel();
-
+                if (CrowdManager.Instance != null)
+                {
+                    CrowdManager.Instance.ActivateCrowd();
+                }
                 string contexto = "CONTEXTO: La víctima está tumbada en la zona segura. Tienes que hacer algo.";
                 string instruccion = "PASO 1: ¡Verificar Conciencia! Toca sus hombros y llámalo en voz alta para ver si responde.";
 
@@ -253,13 +256,11 @@ public class RescueManager : Singleton<RescueManager>
                 UIManager.Instance.ShowWristInstruction(instruccionEspera);
 
                 // 2. Marcar Toggle
-                UIManager.Instance.CompleteChecklistStep(2); // Marca Paso 3
+                UIManager.Instance.CompleteChecklistStep(2); 
 
-                // 3. Texto del SIGUIENTE paso (Paso 4: RCP)
                 string contextoSiguiente = "CONTEXTO: El corazón no late. Debes bombear sangre manualmente.";
-                string instruccionSiguiente = "PASO 4: ¡Inicia RCP! Presiona <b>[Q] + [E]</b> (o <b>Grips de VR</b>) al ritmo.";
+                string instruccionSiguiente = "PASO 4: ¡Inicia RCP! Presiona los dos gatillos al ritmo.";
 
-                // 4. Llamar Corutina Genérica (¡con 2 strings!)
                 StartCoroutine(TransitionAfterDelay(
                     RescueState.PerformCPR,
                     duracionAudioOK,
